@@ -31,6 +31,18 @@
  * @license GNU General Public Licence 2.0 or later
  */
 
+if ( function_exists( 'wfLoadExtension' ) ) {
+	wfLoadExtension( 'examples/Example' );
+	// Keep i18n globals so mergeMessageFileList.php doesn't break
+	$wgMessagesDirs['Example'] = __DIR__ . '/i18n';
+	$wgExtensionMessagesFiles['ExampleAlias'] = __DIR__ . '/Example.i18n.alias.php';
+	wfWarn(
+		'Deprecated PHP entry point used for Example extension. Please use wfLoadExtension ' .
+		'instead, see https://www.mediawiki.org/wiki/Extension_registration for more details.'
+	);
+	return true;
+}
+
 /**
  * MediaWiki has several global variables which can be reused or even altered
  * by your extension. The very first one is the $wgExtensionCredits which will
