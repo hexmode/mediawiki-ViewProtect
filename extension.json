@@ -2,7 +2,7 @@
 	"name": "ViewProtect",
 	"version": "0.1.0",
 	"author": [
-		"[http://mwstake.org/ Mark A. Hershberger]",
+		"[http://mwstake.org/ Mark A. Hershberger]"
 	],
 	"url": "https://www.mediawiki.org/wiki/Extension:ViewProtect",
 	"descriptionmsg": "viewprotect-desc",
@@ -19,7 +19,7 @@
 		]
 	},
 	"ExtensionMessagesFiles": {
-		"ViewProtectAlias": "ViewProtect.i18n.alias.php",
+		"ViewProtectAlias": "ViewProtect.i18n.alias.php"
 	},
 	"AutoloadClasses": {
 		"ViewProtectHooks": "ViewProtect.hooks.php",
@@ -28,8 +28,6 @@
 	},
 	"Hooks": {
 		"BeforePageDisplay": "ViewProtectHooks::onBeforePageDisplay",
-		"ParserFirstCallInit": "ViewProtectHooks::onParserFirstCallInit",
-		"ParserGetVariableValueSwitch": "ViewProtectHooks::onParserGetVariableValueSwitch",
 		"LoadExtensionSchemaUpdates": "ViewProtectHooks::onLoadExtensionSchemaUpdates"
 	},
 	"config": {
