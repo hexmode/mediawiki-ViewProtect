@@ -1,5 +1,5 @@
 <?php
-class ApiQueryExample extends ApiQueryBase {
+class ApiQueryViewProtect extends ApiQueryBase {
 
 	/**
 	 * Constructor is optional. Only needed if we give
@@ -15,11 +15,11 @@ class ApiQueryExample extends ApiQueryBase {
 
 	/**
 	 * In this example we're returning one ore more properties
-	 * of wgExampleFooStuff. In a more realistic example, this
+	 * of wgViewProtectFooStuff. In a more realistic example, this
 	 * method would probably
 	 */
 	public function execute() {
-		global $wgExampleFooStuff;
+		global $wgViewProtectFooStuff;
 		$params = $this->extractRequestParams();
 
 		$stuff = array();
@@ -28,14 +28,14 @@ class ApiQueryExample extends ApiQueryBase {
 		// (or none, if it doesn't exist)
 		if ( isset( $params['key'] ) ) {
 			$key = $params['key'];
-			if ( isset( $wgExampleFooStuff[$key] ) ) {
-				$stuff[$key] = $wgExampleFooStuff[$key];
+			if ( isset( $wgViewProtectFooStuff[$key] ) ) {
+				$stuff[$key] = $wgViewProtectFooStuff[$key];
 			}
 
 		// This is an unfiltered request, replace the array with the total
 		// set of properties instead.
 		} else {
-			$stuff = $wgExampleFooStuff;
+			$stuff = $wgViewProtectFooStuff;
 		}
 
 		$r = array( 'stuff' => $stuff );
@@ -50,12 +50,12 @@ class ApiQueryExample extends ApiQueryBase {
 		);
 	}
 
-	protected function getExamplesMessages() {
+	protected function getViewProtectsMessages() {
 		return array(
-			'action=query&list=example'
-				=> 'apihelp-query+example-example-1',
-			'action=query&list=example&key=do'
-				=> 'apihelp-query+example-example-2',
+			'action=query&list=viewprotect'
+				=> 'apihelp-query+viewprotect-example-1',
+			'action=query&list=viewprotect&key=do'
+				=> 'apihelp-query+viewprotect-example-2',
 		);
 	}
 }

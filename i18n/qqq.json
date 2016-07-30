@@ -1,0 +1,12 @@
+{
+	"@metadata": {
+		"authors": []
+	},
+	"viewprotect-desc": "{{desc}}",
+	"viewprotect": "Title of Special:ViewProtect.",
+	"viewprotect-intro": "Intro paragraph shown on Special:ViewProtect.",
+	"apihelp-query+viewprotect-description": "{{doc-apihelp-description|query+example}}",
+	"apihelp-query+example-param-key": "{{doc-apihelp-param|query+example|key}}",
+	"apihelp-query+viewprotect-example-1": "{{doc-apihelp-example|query+example}}",
+	"apihelp-query+viewprotect-example-2": "{{doc-apihelp-example|query+example}}"
+}

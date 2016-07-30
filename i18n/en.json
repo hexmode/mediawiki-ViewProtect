@@ -1,0 +1,14 @@
+{
+	"@metadata": {
+		"authors": []
+	},
+	"viewprotect-desc": "ViewProtect adds the ability to hide pages based on groups.",
+	"viewprotect-color-label": "Today's color:",
+	"viewprotect-color-value": "$1",
+	"viewprotect": "View Protection",
+	"viewprotect-intro": "This is the ViewProtect special page.",
+	"apihelp-query+viewprotect-description": "Get information about View Protection.",
+	"apihelp-query+example-param-key": "Reduce the result to only one of the viewprotect properties.",
+	"apihelp-query+viewprotect-example-1": "Get all the information about viewprotect.",
+	"apihelp-query+viewprotect-example-2": "Get only information for the key \"do\""
+}

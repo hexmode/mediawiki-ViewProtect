@@ -1,5 +1,5 @@
 [gerrit]
 host=gerrit.wikimedia.org
 port=29418
-project=mediawiki/extensions/examples.git
+project=mediawiki/extensions/ViewProtect.git
 defaultbranch=master
