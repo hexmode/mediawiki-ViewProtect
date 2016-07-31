@@ -7,6 +7,7 @@
 	"viewprotect-color-value": "$1",
 	"viewprotect": "View Protection",
 	"viewprotect-intro": "This is the ViewProtect special page.",
+	"viewprotect-denied": "This page is protect by ViewProtect. 1: $1 2: $2",
 	"apihelp-query+viewprotect-description": "Get information about View Protection.",
 	"apihelp-query+example-param-key": "Reduce the result to only one of the viewprotect properties.",
 	"apihelp-query+viewprotect-example-1": "Get all the information about viewprotect.",

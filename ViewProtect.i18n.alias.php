@@ -13,7 +13,3 @@ $specialPageAliases['en'] = array(
 	'ViewProtect' => array( 'ViewProtect' ),
 );
 
-/** Dutch (Nederlands) */
-$specialPageAliases['nl'] = array(
-	'ViewProtect' => array( 'HalloWereld' ),
-);

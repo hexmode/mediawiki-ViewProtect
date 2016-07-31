@@ -22,12 +22,15 @@
 		"ViewProtectAlias": "ViewProtect.i18n.alias.php"
 	},
 	"AutoloadClasses": {
-		"ViewProtectHooks": "ViewProtect.hooks.php",
+		"ViewProtect": "includes/ViewProtect.php",
+		"ViewProtectHooks": "includes/Hooks.php",
 		"SpecialViewProtect": "specials/SpecialViewProtect.php",
 		"ApiQueryViewProtect": "api/ApiQueryViewProtect.php"
 	},
 	"Hooks": {
+		"CoPPageGroups": "ViewProtectHooks::onCoPPageGroups",
 		"BeforePageDisplay": "ViewProtectHooks::onBeforePageDisplay",
+		"getUserPermissionsErrors": "ViewProtectHooks::onGetUserPermissionsErrors",
 		"LoadExtensionSchemaUpdates": "ViewProtectHooks::onLoadExtensionSchemaUpdates"
 	},
 	"config": {

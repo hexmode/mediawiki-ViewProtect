@@ -4,26 +4,28 @@
 
 -- Notes table
 CREATE TABLE /*_*/viewprotect (
-  -- Unique ID to identify each note
-  exnote_id int unsigned NOT NULL PRIMARY KEY AUTO_INCREMENT,
-
-  -- Foreign key to user.user_id
-  exnote_user int unsigned NOT NULL,
-
   -- Key to page.page_id.
-  exnote_page int unsigned NOT NULL,
+  viewprotect_page int unsigned NOT NULL,
 
-  -- Note value as a string.
-  exnote_value blob
+  -- Group name
+  -- Later this will point to the foreign key of our group editor
+  viewprotect_group varbinary(255) NOT NULL,
 
+  -- Permission
+  -- right now this is the permission name
+  viewprotect_permission varchar(32) NOT NULL
 ) /*$wgDBTableOptions*/;
 
--- For querying of all notes from a certain user
---  (e.g. Special:Notes).
--- For querying of all notes from a certain user on a certain page
---  (e.g. "My notes" on a page).
-CREATE INDEX /*i*/exnote_user_page ON /*_*/viewprotect (exnote_user, exnote_page);
+CREATE UNIQUE INDEX /*i*/viewprotect_index
+			 ON /*_*/viewprotect (viewprotect_page, viewprotect_group, viewprotect_permission);
 
--- For querying of all notes from all users on a certain page
---  (e.g. "Notes by other users" on a certain page).
-CREATE INDEX /*i*/exnote_page_user ON /*_*/viewprotect (exnote_page, exnote_user);
+-- For querying of all groups on a page
+CREATE INDEX /*i*/viewprotect_group_page ON /*_*/viewprotect (viewprotect_group, viewprotect_page);
+
+-- For querying of all permission from on a certain page
+CREATE INDEX /*i*/viewprotect_page_permission
+			 ON /*_*/viewprotect (viewprotect_page, viewprotect_permission);
+
+-- For querying of all permissions for a group
+CREATE INDEX /*i*/viewprotect_group_permission
+			 ON /*_*/viewprotect (viewprotect_group, viewprotect_permission);
