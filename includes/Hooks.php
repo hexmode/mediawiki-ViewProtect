@@ -50,8 +50,12 @@ class ViewProtectHooks {
 			"read", "edit", "patrol", "deletedhistory",
 			"delete", "move", "protect",
 		);
+
 		$result = ViewProtect::checkPermission( $title, $user, $action );
-		wfDebugLog( __METHOD__, "Result of $title/$user/$action: " . var_export( $result, true ) );
+
+		if ( count( $result ) > 0 ) {
+			return false;
+		}
 
 		return true;
 	}

@@ -26,7 +26,7 @@ class ViewProtect {
 				$groupList[] = $group;
 			}
 			wfDebugLog( __METHOD__, "Result for $user/$title/$action: no" );
-			return [ [ "viewprotect-denied", "xxx" ] ];
+			return [ [ "viewprotect-denied", $groupList ] ];
 		}
 		wfDebugLog( __METHOD__, "Result for $user/$title/$action: ok" );
 		return [];
