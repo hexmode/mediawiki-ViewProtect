@@ -8,9 +8,25 @@
 
 class ViewProtect {
 	static protected $cache = null;
+	static protected $pagePermissionWriteCache = [];
 
-	static public function checkPermission( Title $title, User $user, $action ) {
-		if ( self::userIsEditor( $user ) ) {
+	static public function clearPagePermissions( $title ) {
+		if ( is_object( $title ) ) {
+			$title = [ $title->getArticleId() ];
+		}
+
+		$dbw = wfGetDB( DB_MASTER );
+		foreach( (array)$title as $page ) {
+			$dbw->delete( 'viewprotect',
+						  [ 'viewprotect_page' => $page ],
+						  __METHOD__ );
+		}
+	}
+
+	static public function checkPermission(
+		Title $title, User $user, $action
+	) {
+		if ( self::userIsVIP( $user ) ) {
 			return [];
 		}
 		$allowedGroups = self::getPageProtections( $title, $action );
@@ -20,7 +36,8 @@ class ViewProtect {
 
 			foreach ( $allowedGroups as $group ) {
 				if ( self::inGroup( $user, $group ) ) {
-					wfDebugLog( __METHOD__, "Result for $user/$title/$action: ok" );
+					wfDebugLog( __METHOD__,
+								"Result for $user/$title/$action: ok" );
 					return [];
 				}
 				$groupList[] = $group;
@@ -33,12 +50,26 @@ class ViewProtect {
 	}
 
 	static public function setPageProtection( Title $title, $action, $group ) {
+		self::$pagePermissionWriteCache[$title->getArticleID()][$action][$group] = 1;
+	}
+
+	static public function flushPageProtections() {
 		$dbw = wfGetDB( DB_MASTER );
-		$dbw->insert( 'viewprotect',
-					  [ 'viewprotect_page' => $title->getArticleID(),
-						'viewprotect_group' => $group,
-						'viewprotect_permission' => $action ],
-					  __METHOD__, [ 'IGNORE' ] );
+		$dbw->startAtomic( __METHOD__ );
+		self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
+		foreach( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
+			foreach( $actionGroup as $action => $group ) {
+				if ( is_array($group) ) {
+					$group = $dbw->makeList( $group );
+				}
+				$dbw->insert( 'viewprotect',
+							  [ 'viewprotect_page' => $pageId,
+								'viewprotect_permission' => $action,
+								'viewprotect_group' => $group ],
+							  __METHOD__ );
+			}
+		}
+		$dbw->endAtomic( __METHOD__ );
 	}
 
 	static protected function getPageProtections( Title $title, $action ) {
@@ -47,12 +78,15 @@ class ViewProtect {
 		if ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) ) {
 			$dbr = wfGetDB( DB_MASTER );
 			$res = $dbr->select( 'viewprotect',
-								 [ 'viewprotect_group', 'viewprotect_permission' ],
+								 [ 'viewprotect_group',
+								   'viewprotect_permission' ],
 								 [ 'viewprotect_page' => $dbkey ],
 								 __METHOD__ );
 			self::$cache[$dbkey] = [];
 			foreach ( $res as $row ) {
-				self::$cache[$dbkey][$row->viewprotect_permission][$row->viewprotect_group] = 1;
+				$perm = $row->viewprotect_permission;
+				$group = $row->viewprotect_group;
+				self::$cache[$dbkey][$perm][$group] = 1;
 			}
 		}
 
@@ -77,11 +111,13 @@ class ViewProtect {
 				"Is this a CoP-modified Auth_remoteuser?" );
 		}
 		$r = $wgAuth->isInCoPGroup( $group, $user );
-		wfDebugLog( __METHOD__, "$user is in $group: " . ( $r ? "yes" : "no" ) );
+		wfDebugLog( __METHOD__, "$user is in $group: " .
+					( $r ? "yes" : "no" ) );
 		return $r;
 	}
 
-	static protected function userIsEditor( User $user ) {
-		return in_array( 'Editor', $user->getGroups() );
+	static protected function userIsVIP( User $user ) {
+		$config = ConfigFactory::getDefaultInstance()->makeConfig( 'main' );
+		return in_array( $config->get( 'VIPUserClass' ), $user->getGroups() );
 	}
 }
