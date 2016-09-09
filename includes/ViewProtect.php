@@ -75,7 +75,7 @@ class ViewProtect {
 	static protected function getPageProtections( Title $title, $action ) {
 		wfDebugLog( __METHOD__, "Checking $action for $title" );
 		$dbkey = $title->getArticleID();
-		if ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) ) {
+		if ( $dbkey !== 0 && ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) ) ) {
 			$dbr = wfGetDB( DB_MASTER );
 			$res = $dbr->select( 'viewprotect',
 								 [ 'viewprotect_group',
