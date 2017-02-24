@@ -19,21 +19,22 @@
 		]
 	},
 	"ExtensionMessagesFiles": {
-		"ViewProtectAlias": "ViewProtect.i18n.alias.php"
+		"ViewProtectAlias": "src/i18n/Alias.php"
 	},
 	"AutoloadClasses": {
-		"ViewProtect": "includes/ViewProtect.php",
-		"ViewProtectHooks": "includes/Hooks.php",
-		"SpecialViewProtect": "specials/SpecialViewProtect.php",
-		"ApiQueryViewProtect": "api/ApiQueryViewProtect.php"
+		"ViewProtect\\ViewProtect": "src/ViewProtect.php",
+		"ViewProtect\\Hooks": "src/Hooks.php",
+		"ViewProtect\\SpecialViewProtect": "src/SpecialViewProtect.php",
+		"ViewProtect\\ApiQueryViewProtect": "src/ApiQueryViewProtect.php"
 	},
 	"Hooks": {
-		"CoPPageGroups": "ViewProtectHooks::onCoPPageGroups",
-		"BeforePageDisplay": "ViewProtectHooks::onBeforePageDisplay",
-		"getUserPermissionsErrors": "ViewProtectHooks::onGetUserPermissionsErrors",
-		"LoadExtensionSchemaUpdates": "ViewProtectHooks::onLoadExtensionSchemaUpdates"
+		"PageGroups": "ViewProtect\\Hooks::onCoPPageGroups",
+		"BeforePageDisplay": "ViewProtect\\Hooks::onBeforePageDisplay",
+		"getUserPermissionsErrors": "ViewProtect\\Hooks::onGetUserPermissionsErrors",
+		"LoadExtensionSchemaUpdates": "ViewProtect\\Hooks::onLoadExtensionSchemaUpdates"
 	},
 	"config": {
+		"VIPUserGroup": "editor"
 	},
 	"manifest_version": 1
 }

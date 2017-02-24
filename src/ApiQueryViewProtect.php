@@ -1,5 +1,26 @@
 <?php
-class ApiQueryViewProtect extends ApiQueryBase {
+/*
+ * Copyright (C) 2017  Mark A. Hershberger
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+namespace ViewProtect;
+
+use ApiQueryBase;
+
+class ApiQuery extends ApiQueryBase {
 
 	/**
 	 * Constructor is optional. Only needed if we give
@@ -22,7 +43,7 @@ class ApiQueryViewProtect extends ApiQueryBase {
 		global $wgViewProtectFooStuff;
 		$params = $this->extractRequestParams();
 
-		$stuff = array();
+		$stuff = [];
 
 		// This is a filtered request, only show this key if it exists,
 		// (or none, if it doesn't exist)
@@ -38,24 +59,30 @@ class ApiQueryViewProtect extends ApiQueryBase {
 			$stuff = $wgViewProtectFooStuff;
 		}
 
-		$r = array( 'stuff' => $stuff );
-		$this->getResult()->addValue( null, $this->getModuleName(), $r );
+		$result = [ 'stuff' => $stuff ];
+		$this->getResult()->addValue( null, $this->getModuleName(), $result );
 	}
 
+	/**
+	 *
+	 */
 	public function getAllowedParams() {
-		return array(
-			'key' => array(
+		return [
+			'key' => [
 				ApiBase::PARAM_TYPE => 'string',
-			),
-		);
+			],
+		];
 	}
 
+	/**
+	 *
+	 */
 	protected function getViewProtectsMessages() {
-		return array(
+		return [
 			'action=query&list=viewprotect'
 				=> 'apihelp-query+viewprotect-example-1',
 			'action=query&list=viewprotect&key=do'
 				=> 'apihelp-query+viewprotect-example-2',
-		);
+		];
 	}
 }

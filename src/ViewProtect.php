@@ -2,28 +2,55 @@
 /**
  * ViewProtect extension
  *
+ * Copyright (C) 2017  Mark A. Hershberger
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  * @file
  * @ingroup Extensions
  */
+
+namespace ViewProtect;
+
+use ConfigFactory;
+use Title;
+use User;
 
 class ViewProtect {
 	static protected $cache = null;
 	static protected $pagePermissionWriteCache = [];
 
-	static public function clearPagePermissions( $title ) {
+	/**
+	 *
+	 */
+	public static function clearPagePermissions( $title ) {
 		if ( is_object( $title ) ) {
 			$title = [ $title->getArticleId() ];
 		}
 
 		$dbw = wfGetDB( DB_MASTER );
-		foreach( (array)$title as $page ) {
+		foreach ( (array)$title as $page ) {
 			$dbw->delete( 'viewprotect',
 						  [ 'viewprotect_page' => $page ],
 						  __METHOD__ );
 		}
 	}
 
-	static public function checkPermission(
+	/**
+	 *
+	 */
+	public static function checkPermission(
 		Title $title, User $user, $action
 	) {
 		if ( self::userIsVIP( $user ) ) {
@@ -49,17 +76,23 @@ class ViewProtect {
 		return [];
 	}
 
-	static public function setPageProtection( Title $title, $action, $group ) {
+	/**
+	 *
+	 */
+	public static function setPageProtection( Title $title, $action, $group ) {
 		self::$pagePermissionWriteCache[$title->getArticleID()][$action][$group] = 1;
 	}
 
-	static public function flushPageProtections() {
+	/**
+	 *
+	 */
+	public static function flushPageProtections() {
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->startAtomic( __METHOD__ );
 		self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
-		foreach( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
-			foreach( $actionGroup as $action => $group ) {
-				if ( is_array($group) ) {
+		foreach ( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
+			foreach ( $actionGroup as $action => $group ) {
+				if ( is_array( $group ) ) {
 					$group = $dbw->makeList( $group );
 				}
 				$dbw->insert( 'viewprotect',
@@ -72,7 +105,10 @@ class ViewProtect {
 		$dbw->endAtomic( __METHOD__ );
 	}
 
-	static protected function getPageProtections( Title $title, $action ) {
+	/**
+	 *
+	 */
+	protected static function getPageProtections( Title $title, $action ) {
 		wfDebugLog( __METHOD__, "Checking $action for $title" );
 		$dbkey = $title->getArticleID();
 		if ( $dbkey !== 0 && ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) ) ) {
@@ -96,7 +132,10 @@ class ViewProtect {
 		return array_keys( self::$cache[$dbkey][$action] );
 	}
 
-	static protected function inGroup( User $user, $group ) {
+	/**
+	 *
+	 */
+	protected static function inGroup( User $user, $group ) {
 		if ( $group === 'employees-only' ) {
 			return in_array( 'employee', $user->getGroups() );
 		}
@@ -110,14 +149,17 @@ class ViewProtect {
 				"but none was found.  " .
 				"Is this a CoP-modified Auth_remoteuser?" );
 		}
-		$r = $wgAuth->isInCoPGroup( $group, $user );
+		$result = $wgAuth->isInCoPGroup( $group, $user );
 		wfDebugLog( __METHOD__, "$user is in $group: " .
-					( $r ? "yes" : "no" ) );
-		return $r;
+					( $result ? "yes" : "no" ) );
+		return $result;
 	}
 
-	static protected function userIsVIP( User $user ) {
+	/**
+	 *
+	 */
+	protected static function userIsVIP( User $user ) {
 		$config = ConfigFactory::getDefaultInstance()->makeConfig( 'main' );
-		return in_array( $config->get( 'VIPUserClass' ), $user->getGroups() );
+		return in_array( $config->get( 'VIPUserGroup' ), $user->getGroups() );
 	}
 }

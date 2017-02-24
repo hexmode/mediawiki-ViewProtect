@@ -1,0 +1,86 @@
+<?php
+/**
+ * Hooks for ViewProtect extension
+ *
+ * Copyright (C) 2017  Mark A. Hershberger
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @file
+ * @ingroup Extensions
+ */
+
+namespace ViewProtect;
+
+use OutputPage;
+use Skin;
+use Title;
+use User;
+
+class Hooks {
+	/**
+	 * Use this hook to add whatever we need to the page.
+	 *
+	 * @param OutputPage $out for anything we need to display
+	 * @param Skin $skin for the skin
+	 * @return bool
+	 *
+	 * @SuppressWarnings(UnusedFormalParameter)
+	 */
+	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
+		// Always return true, indicating that parser initialization should
+		// continue normally.
+		return true;
+	}
+
+	/**
+	 * This registers our database schema update(s)
+	 *
+	 * @param DatabaseUpdater $updater pump updates through here
+	 * @return bool
+	 */
+	public static function onLoadExtensionSchemaUpdates( DatabaseUpdater $updater ) {
+		$updater->addExtensionTable( 'viewprotect', __DIR__ . '/../sql/add-viewprotect.sql' );
+
+		return true;
+	}
+
+	/**
+	 * This checks the permissions to see if they're allowed.
+	 *
+	 * @param Title $title of page to check
+	 * @param User $user to check perms for
+	 * @param string $action being performed
+	 * @param bool|string|array &$result (array of) Permissions error
+	 *        message keys or true if no errror.
+	 * @return bool
+	 */
+	public static function onGetUserPermissionsErrors(
+		Title $title, User $user, $action, &$result
+	) {
+		// For later reference, these are the possible actions
+		// $available = array(
+		// "read", "edit", "patrol", "deletedhistory",
+		// "delete", "move", "protect",
+		// );
+
+		$result = ViewProtect::checkPermission( $title, $user, $action );
+
+		if ( count( $result ) > 0 ) {
+			return false;
+		}
+
+		return true;
+	}
+}
