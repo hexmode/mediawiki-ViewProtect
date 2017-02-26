@@ -23,6 +23,7 @@
 
 namespace ViewProtect;
 
+use DatabaseUpdater;
 use OutputPage;
 use Skin;
 use Title;
@@ -74,13 +75,35 @@ class Hooks {
 		// "read", "edit", "patrol", "deletedhistory",
 		// "delete", "move", "protect",
 		// );
+		$result = ViewProtect::hasPermission( $title, $user, $action );
+		if ( count( $result ) == 0 ) {
+			$result = true;
+		}
+		return true;
+	}
 
-		$result = ViewProtect::checkPermission( $title, $user, $action );
-
-		if ( count( $result ) > 0 ) {
+	/**
+	 * Check for any read restrictions
+	 *
+	 * @param Title $title file page
+	 * @param string &$path don't know why I'd want this
+	 * @param string &$baseName isn't this in title?
+	 * @param array &$result parameters for wfForbidden
+	 * @return bool false if restricted and current user isn't a member
+	 */
+	public static function onImgAuthBeforeStream( Title $title, &$path, &$basename,
+												  &$result ) {
+		global $wgResourceBasePath, $wgUser;
+		$group = ViewProtect::getPageRestrictions( $title, 'read' );
+		if ( count( $group ) == 0 ) {
+			return true;
+		}
+		$matched = array_intersect( $group, $wgUser->getGroups() );
+		if ( count( $matched ) == 0 ) {
+			$path = $wgResourceBasePath . "/extensions/ViewProtect/resources/Stop_Sign.svg";
+			$result = [ 'img-auth-accessdenied', 'img-auth-badtitle', $basename ];
 			return false;
 		}
-
 		return true;
 	}
 }

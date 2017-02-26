@@ -32,7 +32,10 @@ class ViewProtect {
 	static protected $pagePermissionWriteCache = [];
 
 	/**
+	 * Remove all permission protections
 	 *
+	 * @param Title|int $title the page id or title object to clear permissions for
+	 * @return bool|int true if successful or number of rows removed
 	 */
 	public static function clearPagePermissions( $title ) {
 		if ( is_object( $title ) ) {
@@ -41,50 +44,64 @@ class ViewProtect {
 
 		$dbw = wfGetDB( DB_MASTER );
 		foreach ( (array)$title as $page ) {
-			$dbw->delete( 'viewprotect',
-						  [ 'viewprotect_page' => $page ],
-						  __METHOD__ );
+			$result = $dbw->delete( 'viewprotect',
+									[ 'viewprotect_page' => $page ],
+									__METHOD__ );
 		}
+		if ( is_object( $result ) ) {
+			$result = $result->numRows();
+		}
+		return $result;
 	}
 
 	/**
+	 * See if user has access to perform a given action on a page
 	 *
+	 * @param Title $title title being checked
+	 * @param User $user to check
+	 * @param string $action being checked
+	 * @return array empty if allowed, error with groups that have access
 	 */
-	public static function checkPermission(
+	public static function hasPermission(
 		Title $title, User $user, $action
 	) {
 		if ( self::userIsVIP( $user ) ) {
 			return [];
 		}
-		$allowedGroups = self::getPageProtections( $title, $action );
+		$allowedGroups = self::getPageRestrictions( $title, $action );
 		wfDebugLog( __METHOD__, "Checking for $user/$title/$action ..." );
-		if ( count( $allowedGroups ) > 0 ) {
-			$groupList = [];
-
-			foreach ( $allowedGroups as $group ) {
-				if ( self::inGroup( $user, $group ) ) {
-					wfDebugLog( __METHOD__,
-								"Result for $user/$title/$action: ok" );
-					return [];
-				}
-				$groupList[] = $group;
-			}
-			wfDebugLog( __METHOD__, "Result for $user/$title/$action: no" );
-			return [ [ "viewprotect-denied", $groupList ] ];
+		$groupList = [];
+		if ( count( $allowedGroups ) === 0 ) {
+			wfDebugLog( __METHOD__,
+						"Result for $user/$title/$action: everyone allowed" );
+			return [];
 		}
-		wfDebugLog( __METHOD__, "Result for $user/$title/$action: ok" );
-		return [];
+
+		foreach ( $allowedGroups as $group ) {
+			if ( self::inGroup( $user, $group ) ) {
+				wfDebugLog( __METHOD__,
+							"Result for $user/$title/$action: ok" );
+				return [];
+			}
+			$groupList[] = $group;
+		}
+		wfDebugLog( __METHOD__, "Result for $user/$title/$action: no" );
+		return [ [ "viewprotect-denied", $groupList ] ];
 	}
 
 	/**
+	 * Set the page permission cache
 	 *
+	 * @param Title $title title
+	 * @param string $action restricted action
+	 * @param string $group group allowed
 	 */
 	public static function setPageProtection( Title $title, $action, $group ) {
 		self::$pagePermissionWriteCache[$title->getArticleID()][$action][$group] = 1;
 	}
 
 	/**
-	 *
+	 * Write cached page permissions to disk.
 	 */
 	public static function flushPageProtections() {
 		$dbw = wfGetDB( DB_MASTER );
@@ -92,26 +109,32 @@ class ViewProtect {
 		self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
 		foreach ( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
 			foreach ( $actionGroup as $action => $group ) {
-				if ( is_array( $group ) ) {
-					$group = $dbw->makeList( $group );
+				$groups = array_keys( $group );
+				foreach ( $groups as $group ) {
+					$dbw->insert( 'viewprotect',
+								  [ 'viewprotect_page' => $pageId,
+									'viewprotect_permission' => $action,
+									'viewprotect_group' => $group ],
+								  __METHOD__ );
 				}
-				$dbw->insert( 'viewprotect',
-							  [ 'viewprotect_page' => $pageId,
-								'viewprotect_permission' => $action,
-								'viewprotect_group' => $group ],
-							  __METHOD__ );
 			}
 		}
 		$dbw->endAtomic( __METHOD__ );
 	}
 
 	/**
+	 * Get the groups allowed
 	 *
+	 * @param Title $title title
+	 * @param string $action restricted action
+	 * @return array list of allowed groups, empty if everyone is allowed
 	 */
-	protected static function getPageProtections( Title $title, $action ) {
+	public static function getPageRestrictions( Title $title, $action ) {
 		wfDebugLog( __METHOD__, "Checking $action for $title" );
 		$dbkey = $title->getArticleID();
-		if ( $dbkey !== 0 && ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) ) ) {
+		if ( $dbkey !== 0 &&
+			 ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) )
+		) {
 			$dbr = wfGetDB( DB_MASTER );
 			$res = $dbr->select( 'viewprotect',
 								 [ 'viewprotect_group',
@@ -133,33 +156,28 @@ class ViewProtect {
 	}
 
 	/**
+	 * Check if user is in the group
 	 *
+	 * @param User $user being checked
+	 * @param string $group to check
+	 * @return bool true if user is in the group
 	 */
 	protected static function inGroup( User $user, $group ) {
-		if ( $group === 'employees-only' ) {
-			return in_array( 'employee', $user->getGroups() );
-		}
+		$result = in_array( $group, $user->getGroups() );
 
-		wfDebugLog( __METHOD__, "Checking if $user is in $group ..." );
-		// Ugh, this should be in my group management extension
-		global $wgAuth;
-		if ( !method_exists( $wgAuth, "isInCoPGroup" ) ) {
-			throw new MWException(
-				"Expected isInCoPGroup method for \$wgAuth, " .
-				"but none was found.  " .
-				"Is this a CoP-modified Auth_remoteuser?" );
-		}
-		$result = $wgAuth->isInCoPGroup( $group, $user );
 		wfDebugLog( __METHOD__, "$user is in $group: " .
 					( $result ? "yes" : "no" ) );
 		return $result;
 	}
 
 	/**
+	 * Check if user is in the configured VIP group
 	 *
+	 * @param User $user being checked
+	 * @return bool true if user is vip
 	 */
 	protected static function userIsVIP( User $user ) {
 		$config = ConfigFactory::getDefaultInstance()->makeConfig( 'main' );
-		return in_array( $config->get( 'VIPUserGroup' ), $user->getGroups() );
+		return self::inGroup( $user, $config->get( 'VIPUserGroup' ) );
 	}
 }

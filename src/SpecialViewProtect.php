@@ -32,19 +32,16 @@ class SpecialViewProtect extends SpecialPage {
 	 */
 	public function __construct() {
 		// A special page should at least have a name.
-		// We do this by calling the parent class (the SpecialPage class)
-		// constructor method with the name as first and only parameter.
-		parent::__construct( 'ViewProtect' );
+		parent::__construct( 'ViewProtect', 'viewprotectmanage' );
 	}
 
 	/**
 	 * Shows the page to the user.
 	 * @param string $sub The subpage string argument (if any).
 	 *  [[Special:ViewProtect/subpage]].
-	 *
-	 * @SuppressWarnings(UnusedFormalParameter)
 	 */
 	public function execute( $sub ) {
+		parent::execute( $sub );
 		$out = $this->getOutput();
 
 		$out->setPageTitle( $this->msg( 'viewprotect' ) );
@@ -55,7 +52,10 @@ class SpecialViewProtect extends SpecialPage {
 	}
 
 	/**
+	 * Get the section to show this page on in the list of special
+	 * pages.
 	 *
+	 * @return string
 	 */
 	protected function getGroupName() {
 		return 'other';

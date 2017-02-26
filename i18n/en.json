@@ -2,12 +2,21 @@
 	"@metadata": {
 		"authors": []
 	},
+	"viewprotect": "View Protection",
 	"viewprotect-desc": "ViewProtect adds the ability to hide pages based on groups.",
 	"viewprotect-color-label": "Today's color:",
 	"viewprotect-color-value": "$1",
-	"viewprotect": "View Protection",
 	"viewprotect-intro": "This is the ViewProtect special page.",
 	"viewprotect-denied": "You are not in the '$1' group.",
+
+	"viewprotectfile-legend": "Limit access to files",
+	"viewprotectfile-name": "File to restrict:",
+	"viewprotectfile-group": "Restrict $1 to the following group:",
+	"viewprotectfile-submit": "Restrict access",
+	"viewprotectfile-success-add": "$1 has been restricted to the $2 group",
+	"viewprotectfile-success-remove": "$1 is no longer restricted",
+
+	"action-viewprotectmanage": "manage a page's 'read' protection",
 	"apihelp-query+viewprotect-description": "Get information about View Protection.",
 	"apihelp-query+example-param-key": "Reduce the result to only one of the viewprotect properties.",
 	"apihelp-query+viewprotect-example-1": "Get all the information about viewprotect.",

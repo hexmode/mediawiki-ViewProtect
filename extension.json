@@ -8,7 +8,8 @@
 	"descriptionmsg": "viewprotect-desc",
 	"type": "other",
 	"SpecialPages": {
-		"ViewProtect": "SpecialViewProtect"
+		"ViewProtect": "ViewProtect\\SpecialViewProtect",
+		"ViewProtectFile": "ViewProtect\\SpecialViewProtectFile"
 	},
 	"APIListModules": {
 		"viewprotect": "ApiQueryViewProtect"
@@ -25,13 +26,35 @@
 		"ViewProtect\\ViewProtect": "src/ViewProtect.php",
 		"ViewProtect\\Hooks": "src/Hooks.php",
 		"ViewProtect\\SpecialViewProtect": "src/SpecialViewProtect.php",
+		"ViewProtect\\SpecialViewProtectFile": "src/SpecialViewProtectFile.php",
 		"ViewProtect\\ApiQueryViewProtect": "src/ApiQueryViewProtect.php"
 	},
 	"Hooks": {
-		"PageGroups": "ViewProtect\\Hooks::onCoPPageGroups",
 		"BeforePageDisplay": "ViewProtect\\Hooks::onBeforePageDisplay",
 		"getUserPermissionsErrors": "ViewProtect\\Hooks::onGetUserPermissionsErrors",
-		"LoadExtensionSchemaUpdates": "ViewProtect\\Hooks::onLoadExtensionSchemaUpdates"
+		"ImgAuthBeforeStream": "ViewProtect\\Hooks::onImgAuthBeforeStream",
+		"LoadExtensionSchemaUpdates": "ViewProtect\\Hooks::onLoadExtensionSchemaUpdates",
+		"PageGroups": "ViewProtect\\Hooks::onCoPPageGroups",
+		"UpdateUsableLevels": "ViewProtect\\Hooks::onUpdateUsableLevels"
+	},
+	"AvailableRights": [
+		"viewprotectmanage"
+	],
+	"GroupPermissions": {
+		"sysop": {
+			"viewprotectmanage": true
+		}
+	},
+	"ResourceModules": {
+		"ext.ViewProtectFile": {
+			"scripts": "ext.ViewProtectFile.js",
+			"localBasePath": "resources",
+			"messages": [
+				"viewprotectfile-success-add",
+				"viewprotectfile-success-remove"
+			],
+			"dependencies": "mediawiki.notify"
+		}
 	},
 	"config": {
 		"VIPUserGroup": "editor"
