@@ -223,7 +223,7 @@ class SpecialViewProtectFile extends SpecialPage {
 		if ( !is_array( $this->uploadedFiles ) ) {
 			$pager = new ImageListPager(
 				$this->getContext(),
-				$this->getUser(),
+				$this->getUser()->getName(),
 				$search,
 				$this->including(),
 				false
