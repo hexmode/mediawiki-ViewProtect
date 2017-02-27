@@ -24,4 +24,5 @@ $specialPageAliases = [];
 /** English (English) */
 $specialPageAliases['en'] = [
 	'ViewProtect' => [ 'ViewProtect' ],
+	'ViewProtectFile' => [ 'ViewProtectFile' ],
 ];
