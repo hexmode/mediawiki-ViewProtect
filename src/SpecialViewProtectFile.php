@@ -100,9 +100,13 @@ class SpecialViewProtectFile extends SpecialPage {
 	 * @return array for making a form
 	 */
 	public function getFormFields( array $files ) {
+		$selectType = 'combobox';
+		if ( !class_exists( "HTMLComboBoxField" ) ) {
+			$selectType = 'select';
+		}
 		$field = [
 			'viewprotectfile' => [
-				'type' => 'combobox',
+				'type' => $selectType,
 				'name' => 'viewprotectfile',
 				'options' => $files,
 				'default' => $this->mostRecent,
@@ -111,9 +115,6 @@ class SpecialViewProtectFile extends SpecialPage {
 				'required' => true,
 			]
 		];
-		if ( !class_exists( "HTMLComboBoxField" ) ) {
-			$field['viewprotectfile']['type'] = 'select';
-		}
 
 		if ( $this->submittedName &&
 			 $this->userUploaded( $this->submittedName )
@@ -129,16 +130,12 @@ class SpecialViewProtectFile extends SpecialPage {
 				'default' => $this->submittedName,
 			];
 			$field['groups'] = [
-				'type' => 'combobox',
+				'type' => $selectType,
 				'name' => 'groupRestriction',
 				'options' => $this->getGroupMemberships(),
 				'default' => $group,
 				'label-message' => [ 'viewprotectfile-group', $this->submittedName ]
 			];
-		}
-
-		if ( !class_exists( "HTMLComboBoxField" ) ) {
-			$field['groups']['type'] = 'select';
 		}
 
 		return $field;
