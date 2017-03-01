@@ -58,7 +58,7 @@
 		}
 	},
 	"config": {
-		"VIPUserGroup": "editor"
+		"VIPUserGroup": "sysop"
 	},
 	"manifest_version": 1
 }
