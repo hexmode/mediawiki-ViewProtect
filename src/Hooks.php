@@ -94,7 +94,7 @@ class Hooks {
 												  &$result ) {
 		global $wgResourceBasePath, $wgUser;
 
-		$groups = ViewProtect::hasPermission( $title, $wgUser->getGroups(), 'read' );
+		$groups = ViewProtect::hasPermission( $title, $wgUser, 'read' );
 		if ( $groups === true ) {
 			return true;
 		}
