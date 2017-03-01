@@ -54,7 +54,7 @@ class SpecialViewProtectFile extends SpecialPage {
 		parent::execute( $sub );
 
 		$out = $this->getOutput();
-		$out->setPageTitle( $this->msg( 'viewprotect' ) );
+		$out->setPageTitle( $this->msg( 'viewprotectfile' ) );
 		$out->addModules( "ext.ViewProtectFile" );
 
 		$request = $this->getRequest();
@@ -64,8 +64,14 @@ class SpecialViewProtectFile extends SpecialPage {
 			throw new MWException( "Something funky happened!" );
 		}
 		$this->submittedGroup = $request->getVal( 'groupRestriction' );
-		$field = $this->getFormFields();
-		$form = HTMLForm::factory( 'ooui', $field, $this->getContext() );
+		$files = $this->getUserFiles();
+		if ( $files === null ) {
+			$this->getOutput()->addWikiText( wfMessage( 'viewprotectfile-nofiles' ) );
+			return;
+		}
+		$form = HTMLForm::factory( 'ooui',
+								   $this->getFormFields( $files ),
+								   $this->getContext() );
 		$form
 			->setMethod( 'post' )
 			->setAction( $this->getPageTitle()->getLocalURL() )
@@ -90,10 +96,10 @@ class SpecialViewProtectFile extends SpecialPage {
 	/**
 	 * Return form fields
 	 *
+	 * @param array $files to pick from
 	 * @return array for making a form
 	 */
-	public function getFormFields() {
-		$files = $this->getUserFiles();
+	public function getFormFields( array $files ) {
 		$field = [
 			'viewprotectfile' => [
 				'type' => 'combobox',
@@ -232,27 +238,32 @@ class SpecialViewProtectFile extends SpecialPage {
 	 */
 	protected function getUserFiles( $search = "" ) {
 		if ( !is_array( $this->uploadedFiles ) ) {
+			$user = $this->getUser();
+			$isMgr = $user->isAllowed( "viewprotectmanage" )
+				   ? null
+				   : $user->getName();
 			$pager = new ImageListPager(
 				$this->getContext(),
-				$this->getUser()->getName(),
+				$isMgr,
 				$search,
 				$this->including(),
 				false
 			);
-			$pager->doQuery();
 			// Only offer the most recent 200 files for completion
 			$pager->setLimit( 200 );
-
-			$this->mostRecent = $pager->getResult()->current()->img_name;
+			$pager->doQuery();
 			$fileIterator = $pager->getResult();
-			$this->uploadedFiles = [];
+			if ( $fileIterator->numRows() > 0 ) {
+				$this->mostRecent = $fileIterator->current()->img_name;
+				$this->uploadedFiles = [];
 
-			iterator_apply( $fileIterator,
-							function ( $iter ) {
-								$name = $iter->current()->img_name;
-								$this->uploadedFiles[$name] = $name;
-								return true;
-							}, [ $fileIterator ] );
+				iterator_apply( $fileIterator,
+								function ( $iter ) {
+									$name = $iter->current()->img_name;
+									$this->uploadedFiles[$name] = $name;
+									return true;
+								}, [ $fileIterator ] );
+			}
 		}
 		return $this->uploadedFiles;
 	}
