@@ -52,7 +52,8 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onLoadExtensionSchemaUpdates( DatabaseUpdater $updater ) {
-		$updater->addExtensionTable( 'viewprotect', __DIR__ . '/../sql/add-viewprotect.sql' );
+		$updater->addExtensionTable( 'viewprotect',
+									 __DIR__ . '/../sql/add-viewprotect.sql' );
 
 		return true;
 	}

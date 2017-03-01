@@ -74,14 +74,17 @@ class SpecialViewProtectFile extends SpecialPage {
 			->setSubmitCallback( [ $this, 'submitSend' ] )
 			->prepareForm();
 
-		$tried = false;
+		$tried = "";
 
 		if ( $this->submittedName &&
 			 ( $sub == null || $this->submittedGroup !== null )
 		) {
 			$tried = $form->trySubmit();
+			if ( $tried === true ) {
+				$tried = "";
+			}
 		}
-		$form->displayForm( $tried );
+		$form->displayForm( "" );
 	}
 
 	/**
@@ -102,6 +105,9 @@ class SpecialViewProtectFile extends SpecialPage {
 				'required' => true,
 			]
 		];
+		if ( !class_exists( "HTMLComboBoxField" ) ) {
+			$field['viewprotectfile']['type'] = 'select';
+		}
 
 		if ( $this->submittedName &&
 			 $this->userUploaded( $this->submittedName )
@@ -124,6 +130,11 @@ class SpecialViewProtectFile extends SpecialPage {
 				'label-message' => [ 'viewprotectfile-group', $this->submittedName ]
 			];
 		}
+
+		if ( !class_exists( "HTMLComboBoxField" ) ) {
+			$field['groups']['type'] = 'select';
+		}
+
 		return $field;
 	}
 
@@ -180,7 +191,7 @@ class SpecialViewProtectFile extends SpecialPage {
 			$this->getOutput()->redirect(
 				$this->getPageTitle( $this->submittedName )->getLocalURL()
 			);
-			return true;
+			return false;
 		}
 		$title = Title::newFromText( $this->submittedName, NS_FILE );
 		ViewProtect::setPageProtection( $title, 'read', $this->submittedGroup );
@@ -191,7 +202,7 @@ class SpecialViewProtectFile extends SpecialPage {
 			urlencode( $this->submittedName ) . '&group=' .
 			urlencode( $this->submittedGroup )
 		);
-		return true;
+		return "";
 	}
 
 	/**
