@@ -77,9 +77,7 @@ class Hooks {
 		// "delete", "move", "protect",
 		// );
 		$result = ViewProtect::hasPermission( $title, $user, $action );
-		if ( count( $result ) == 0 ) {
-			$result = true;
-		}
+
 		return true;
 	}
 
@@ -92,19 +90,16 @@ class Hooks {
 	 * @param array &$result parameters for wfForbidden
 	 * @return bool false if restricted and current user isn't a member
 	 */
-	public static function onImgAuthBeforeStream( Title $title, &$path, &$basename,
+	public static function onImgAuthBeforeStream( Title $title, &$path, &$baseName,
 												  &$result ) {
 		global $wgResourceBasePath, $wgUser;
-		$group = ViewProtect::getPageRestrictions( $title, 'read' );
-		if ( count( $group ) == 0 ) {
+
+		$groups = ViewProtect::hasPermission( $title, $wgUser->getGroups(), 'read' );
+		if ( $groups === true ) {
 			return true;
 		}
-		$matched = array_intersect( $group, $wgUser->getGroups() );
-		if ( count( $matched ) == 0 ) {
-			$path = $wgResourceBasePath . "/extensions/ViewProtect/resources/Stop_Sign.svg";
-			$result = [ 'img-auth-accessdenied', 'img-auth-badtitle', $basename ];
-			return false;
-		}
-		return true;
+		$path = $wgResourceBasePath . "/extensions/ViewProtect/resources/Stop_Sign.svg";
+		$result = [ 'img-auth-accessdenied', 'img-auth-badtitle', $baseName ];
+		return false;
 	}
 }

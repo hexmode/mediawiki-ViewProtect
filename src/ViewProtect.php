@@ -66,7 +66,7 @@ class ViewProtect {
 		Title $title, User $user, $action
 	) {
 		if ( self::userIsVIP( $user ) ) {
-			return [];
+			return true;
 		}
 		$allowedGroups = self::getPageRestrictions( $title, $action );
 		wfDebugLog( __METHOD__, "Checking for $user/$title/$action ..." );
@@ -74,14 +74,14 @@ class ViewProtect {
 		if ( count( $allowedGroups ) === 0 ) {
 			wfDebugLog( __METHOD__,
 						"Result for $user/$title/$action: everyone allowed" );
-			return [];
+			return true;
 		}
 
 		foreach ( $allowedGroups as $group ) {
 			if ( self::inGroup( $user, $group ) ) {
 				wfDebugLog( __METHOD__,
 							"Result for $user/$title/$action: ok" );
-				return [];
+				return true;
 			}
 			$groupList[] = $group;
 		}
