@@ -12,9 +12,11 @@
 	"viewprotectfile": "Change view protection for a file",
 	"viewprotectfile-nofiles": "There are no recent files that you can change the protection on.",
 	"viewprotectfile-legend": "Limit access to files",
-	"viewprotectfile-name": "File to restrict:",
+	"viewprotectfile-name-enter": "Enter a filename to restrict:",
+	"viewprotectfile-name": "Restricting:",
 	"viewprotectfile-group": "Restrict $1 to the following group:",
 	"viewprotectfile-submit": "Restrict access",
+	"viewprotectfile-notexist": "File does not (yet) exist",
 	"viewprotectfile-success-add": "$1 has been restricted to the $2 group",
 	"viewprotectfile-success-remove": "$1 is no longer restricted",
 

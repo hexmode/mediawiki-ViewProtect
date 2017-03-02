@@ -57,21 +57,24 @@ class SpecialViewProtectFile extends SpecialPage {
 		$out->setPageTitle( $this->msg( 'viewprotectfile' ) );
 		$out->addModules( "ext.ViewProtectFile" );
 
-		$request = $this->getRequest();
-		$this->submittedName = $request->getVal( 'viewprotectfile', $sub );
-		$check = $request->getVal( 'selectedFile' );
-		if ( $check && $this->submittedName !== $check ) {
-			throw new MWException( "Something funky happened!" );
-		}
-		$this->submittedGroup = $request->getVal( 'groupRestriction' );
-		$files = $this->getUserFiles();
+		$files = $this->getRecentFiles();
 		if ( $files === null ) {
 			$this->getOutput()->addWikiText( wfMessage( 'viewprotectfile-nofiles' ) );
 			return;
 		}
-		$form = HTMLForm::factory( 'ooui',
-								   $this->getFormFields( $files ),
-								   $this->getContext() );
+
+		$request = $this->getRequest();
+		$this->submittedName = $request->getVal( 'viewprotectfile', $sub );
+		if ( $request->wasPosted() ) {
+			$check = $request->getVal( 'selectedFile' );
+			if ( $check && $this->submittedName !== $check ) {
+				throw new MWException( "Something funky happened!" );
+			}
+			$this->submittedGroup = $request->getVal( 'groupRestriction' );
+		}
+
+		$fields = $this->getFormFields( $files );
+		$form = HTMLForm::factory( 'ooui', $fields, $this->getContext() );
 		$form
 			->setMethod( 'post' )
 			->setAction( $this->getPageTitle()->getLocalURL() )
@@ -81,16 +84,10 @@ class SpecialViewProtectFile extends SpecialPage {
 			->prepareForm();
 
 		$tried = "";
-
-		if ( $this->submittedName &&
-			 ( $sub == null || $this->submittedGroup !== null )
-		) {
+		if ( $request->wasPosted() ) {
 			$tried = $form->trySubmit();
-			if ( $tried === true ) {
-				$tried = "";
-			}
 		}
-		$form->displayForm( "" );
+		$form->displayForm( $tried );
 	}
 
 	/**
@@ -101,25 +98,42 @@ class SpecialViewProtectFile extends SpecialPage {
 	 */
 	public function getFormFields( array $files ) {
 		$selectType = 'combobox';
+		$optionsName = 'options';
+		$otherName = '';
 		if ( !class_exists( "HTMLComboBoxField" ) ) {
-			$selectType = 'select';
+			$selectType = 'autocompleteselect';
+			$optionsName = 'autocomplete';
+			$otherName = 'options';
 		}
 		$field = [
 			'viewprotectfile' => [
 				'type' => $selectType,
 				'name' => 'viewprotectfile',
-				'options' => $files,
+				$optionsName => $files,
+				$otherName => [],
+				'require-match' => false,
 				'default' => $this->mostRecent,
-				'label-message' => 'viewprotectfile-name',
-				'validation-callback' => [ $this, 'userUploaded' ],
-				'required' => true,
+				'label-message' => 'viewprotectfile-name-enter',
+				'validation-callback' => [ $this, 'userCanModify' ],
+				'required' => true
 			]
 		];
 
-		if ( $this->submittedName &&
-			 $this->userUploaded( $this->submittedName )
-		) {
+		if ( $this->submittedName ) {
+			if ( !$this->userCanModify( $this->submittedName ) ) {
+				return $field;
+			}
+
+			$title = Title::newFromText( $this->submittedName, NS_FILE );
 			$group = $this->getCurrentRestriction( $this->submittedName );
+			if ( !$title->exists() ) {
+				$field['warning'] = [
+					'default' => $this->showNote( 'viewprotectfile-notexist' ),
+					'type' => 'info',
+					'raw' => true,
+				];
+			}
+			$field['viewprotectfile']['label-message'] = 'viewprotectfile-name';
 			$field['viewprotectfile']['default'] = $this->submittedName;
 			$field['viewprotectfile']['readonly'] = true;
 			$field['viewprotectfile']['type'] = 'text';
@@ -130,15 +144,26 @@ class SpecialViewProtectFile extends SpecialPage {
 				'default' => $this->submittedName,
 			];
 			$field['groups'] = [
-				'type' => $selectType,
+				'type' => 'select',
 				'name' => 'groupRestriction',
 				'options' => $this->getGroupMemberships(),
+				'require-match' => true,
 				'default' => $group,
 				'label-message' => [ 'viewprotectfile-group', $this->submittedName ]
 			];
 		}
 
 		return $field;
+	}
+
+	/**
+	 * Get HTML for an info message.
+	 *
+	 * @param string $msg to show
+	 * @return string html
+	 */
+	protected function showNote( $msg ) {
+		return '<ul class="oo-ui-fieldLayout-messages"><li class="oo-ui-fieldLayout-messages-error"><span aria-disabled="false" class="oo-ui-widget oo-ui-widget-enabled oo-ui-iconElement oo-ui-iconElement-icon oo-ui-icon-alert oo-ui-flaggedElement-warning oo-ui-iconWidget oo-ui-image-warning"></span><span aria-disabled="false" class="oo-ui-widget oo-ui-widget-enabled oo-ui-labelElement oo-ui-labelElement-label oo-ui-labelWidget">' . wfMessage( $msg )->parse() . '</span></li></ul>';
 	}
 
 	/**
@@ -179,8 +204,11 @@ class SpecialViewProtectFile extends SpecialPage {
 	 * @param string $file name to check
 	 * @return bool
 	 */
-	public function userUploaded( $file ) {
-		$files = $this->getUserFiles();
+	public function userCanModify( $file ) {
+		if ( $this->getUser()->isAllowed( "viewprotectmanage" ) ) {
+			return true;
+		}
+		$files = $this->getRecentFiles();
 		return isset( $files[$file] );
 	}
 
@@ -233,7 +261,7 @@ class SpecialViewProtectFile extends SpecialPage {
 	 * @param string $search what to look for
 	 * @return array list of titles
 	 */
-	protected function getUserFiles( $search = "" ) {
+	protected function getRecentFiles( $search = "" ) {
 		if ( !is_array( $this->uploadedFiles ) ) {
 			$user = $this->getUser();
 			$isMgr = $user->isAllowed( "viewprotectmanage" )
