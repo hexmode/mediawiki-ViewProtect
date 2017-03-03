@@ -57,8 +57,5 @@
 			"dependencies": "mediawiki.notify"
 		}
 	},
-	"config": {
-		"VIPUserGroup": "sysop"
-	},
 	"manifest_version": 1
 }

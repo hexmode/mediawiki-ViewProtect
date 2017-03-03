@@ -65,7 +65,7 @@ class ViewProtect {
 	public static function hasPermission(
 		Title $title, User $user, $action
 	) {
-		if ( self::userIsVIP( $user ) ) {
+		if ( $user->isAllowed( "viewprotectmanage" ) ) {
 			return true;
 		}
 		$allowedGroups = self::getPageRestrictions( $title, $action );
@@ -168,16 +168,5 @@ class ViewProtect {
 		wfDebugLog( __METHOD__, "$user is in $group: " .
 					( $result ? "yes" : "no" ) );
 		return $result;
-	}
-
-	/**
-	 * Check if user is in the configured VIP group
-	 *
-	 * @param User $user being checked
-	 * @return bool true if user is vip
-	 */
-	protected static function userIsVIP( User $user ) {
-		$config = ConfigFactory::getDefaultInstance()->makeConfig( 'main' );
-		return self::inGroup( $user, $config->get( 'VIPUserGroup' ) );
 	}
 }
