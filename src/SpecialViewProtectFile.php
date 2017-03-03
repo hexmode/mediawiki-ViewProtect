@@ -29,6 +29,7 @@ use ImageListPager;
 use MWException;
 use SpecialPage;
 use Title;
+use User;
 
 class SpecialViewProtectFile extends SpecialPage {
 
@@ -119,13 +120,8 @@ class SpecialViewProtectFile extends SpecialPage {
 			]
 		];
 
-		if ( $this->submittedName ) {
-			if ( !$this->userCanModify( $this->submittedName ) ) {
-				return $field;
-			}
-
+		if ( $this->submittedName && $this->userCanModify( $this->submittedName ) ) {
 			$title = Title::newFromText( $this->submittedName, NS_FILE );
-			$group = $this->getCurrentRestriction( $this->submittedName );
 			if ( !$title->exists() ) {
 				$field['warning'] = [
 					'default' => $this->showNote( 'viewprotectfile-notexist' ),
@@ -143,17 +139,27 @@ class SpecialViewProtectFile extends SpecialPage {
 				'name' => 'selectedFile',
 				'default' => $this->submittedName,
 			];
-			$field['groups'] = [
-				'type' => 'select',
-				'name' => 'groupRestriction',
-				'options' => $this->getGroupMemberships(),
-				'require-match' => true,
-				'default' => $group,
-				'label-message' => [ 'viewprotectfile-group', $this->submittedName ]
-			];
+			$field['groups'] = $this->fillGroupsField();
 		}
 
 		return $field;
+	}
+
+	/**
+	 * Populate the groups field
+	 *
+	 * @return array
+	 */
+	protected function fillGroupsField() {
+		$group = $this->getCurrentRestriction( $this->submittedName );
+		return [
+			'type' => 'select',
+			'name' => 'groupRestriction',
+			'options' => $this->getAvailableGroups(),
+			'require-match' => true,
+			'default' => $group,
+			'label-message' => [ 'viewprotectfile-group', $this->submittedName ]
+		];
 	}
 
 	/**
@@ -188,13 +194,19 @@ class SpecialViewProtectFile extends SpecialPage {
 	 *
 	 * @return array list of groups
 	 */
-	public function getGroupMemberships() {
+	public function getAvailableGroups() {
 		// <none> so group restriction can be removed
 		$groups = [ '<none>' => '' ];
+
+		if ( $this->getUser()->isAllowed( "viewprotectmanage" ) ) {
+			$groupList = User::getAllGroups();
+		} else {
+			$groupList = $this->getUser()->getGroups();
+		}
 		array_map(
 			function( $name ) use ( &$groups ) {
 				$groups[$name] = $name;
-			}, $this->getUser()->getGroups() );
+			}, $groupList );
 		return $groups;
 	}
 
