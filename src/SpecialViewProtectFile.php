@@ -237,8 +237,10 @@ class SpecialViewProtectFile extends SpecialPage {
 			return false;
 		}
 		$title = Title::newFromText( $this->submittedName, NS_FILE );
-		ViewProtect::setPageProtection( $title, 'read', $this->submittedGroup );
-		ViewProtect::setPageProtection( $title, 'upload', $this->submittedGroup );
+		ViewProtect::setPageProtection( $this->getUser(), $title, 'read',
+										$this->submittedGroup );
+		ViewProtect::setPageProtection( $this->getUser(), $title, 'upload',
+										$this->submittedGroup );
 		ViewProtect::flushPageProtections();
 		$this->getOutput()->redirect(
 			$this->getPageTitle()->getLocalURL() .  '?restrict=' .

@@ -17,8 +17,13 @@
 	"viewprotectfile-group": "Restrict $1 to the following group:",
 	"viewprotectfile-submit": "Restrict access",
 	"viewprotectfile-notexist": "File does not (yet) exist",
-	"viewprotectfile-success-add": "$1 has been restricted to the $2 group",
-	"viewprotectfile-success-remove": "$1 is no longer restricted",
 
+	"viewprotect-log-page": "View protection log",
+
+	"log-name-viewprotect": "View protection",
+	"log-show-hide-viewprotect": "$1 view protection log",
+	"log-description-viewprotect": "When a page's read protection is changed",
+	"logentry-viewprotect-hide": "$1 {{GENDER:$2|restricted}} $3 to the '$4' group",
+	"logentry-viewprotect-show": "$1 {{GENDER:$2|removed}} the '$4' group restriction from $3",
 	"action-viewprotectmanage": "manage a page's 'read' protection"
 }

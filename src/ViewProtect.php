@@ -24,6 +24,7 @@
 namespace ViewProtect;
 
 use ConfigFactory;
+use ManualLogEntry;
 use Title;
 use User;
 
@@ -35,6 +36,7 @@ class ViewProtect {
 	 * Remove all permission protections
 	 *
 	 * @param Title|int $title the page id or title object to clear permissions for
+	 * @param User $user who is performing the action
 	 * @return bool|int true if successful or number of rows removed
 	 */
 	public static function clearPagePermissions( $title ) {
@@ -96,8 +98,26 @@ class ViewProtect {
 	 * @param string $action restricted action
 	 * @param string $group group allowed
 	 */
-	public static function setPageProtection( Title $title, $action, $group ) {
-		self::$pagePermissionWriteCache[$title->getArticleID()][$action][$group] = 1;
+	public static function setPageProtection( User $user, Title $title, $action, $group ) {
+		self::$pagePermissionWriteCache[$title->getArticleID()][$action][$group] = $user;
+	}
+
+	/**
+	 * Log an action
+	 *
+	 * @param User $user performing action
+	 * @param string $action being performed
+	 * @param int $pageId that is the target
+	 * @param string $group to which it is restricted
+	 */
+	protected static function log( User $user, $action, $pageId, $group ) {
+		$logEntry = new ManualLogEntry( 'viewprotect', $action );
+		$logEntry->setPerformer( $user );
+		$logEntry->setTarget( Title::newFromId( $pageId ) );
+		$logEntry->setParameters( [
+			'4::group' => $group
+		] );
+		$logEntry->insert();
 	}
 
 	/**
@@ -108,9 +128,9 @@ class ViewProtect {
 		$dbw->startAtomic( __METHOD__ );
 		self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
 		foreach ( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
-			foreach ( $actionGroup as $action => $group ) {
-				$groups = array_keys( $group );
-				foreach ( $groups as $group ) {
+			foreach ( $actionGroup as $action => $groups ) {
+				foreach ( $groups as $group => $user ) {
+					self::log( $user, "hide", $pageId, $group );
 					$dbw->insert( 'viewprotect',
 								  [ 'viewprotect_page' => $pageId,
 									'viewprotect_permission' => $action,

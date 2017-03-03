@@ -28,7 +28,8 @@
 		"ViewProtect\\Hooks": "src/Hooks.php",
 		"ViewProtect\\SpecialViewProtect": "src/SpecialViewProtect.php",
 		"ViewProtect\\SpecialViewProtectFile": "src/SpecialViewProtectFile.php",
-		"ViewProtect\\ApiQueryViewProtect": "src/ApiQueryViewProtect.php"
+		"ViewProtect\\ApiQueryViewProtect": "src/ApiQueryViewProtect.php",
+		"ViewProtect\\Formatter": "src/LogFormatter.php"
 	},
 	"Hooks": {
 		"BeforePageDisplay": "ViewProtect\\Hooks::onBeforePageDisplay",
@@ -56,6 +57,23 @@
 			],
 			"dependencies": "mediawiki.notify"
 		}
+	},
+	"LogTypes": [
+		"viewprotect"
+	],
+	"LogRestrictions": {
+		"viewprotect": "viewprotectmanage"
+	},
+	"FilterLogTypes": {
+		"viewprotect": false
+	},
+	"LogActions": {
+		"viewprotect/hide": "viewprotect-hide-log",
+		"viewprotect/show": "viewprotect-show-log"
+	},
+	"LogActionsHandlers": {
+		"viewprotect/hide": "ViewProtect\\Formatter",
+		"viewprotect/show": "ViewProtect\\Formatter"
 	},
 	"manifest_version": 1
 }
