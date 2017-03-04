@@ -68,12 +68,12 @@
 		"viewprotect": false
 	},
 	"LogActions": {
-		"viewprotect/hide": "viewprotect-hide-log",
-		"viewprotect/show": "viewprotect-show-log"
+		"viewprotect/read": "viewprotect-read",
+		"viewprotect/upload": "viewprotect-upload"
 	},
 	"LogActionsHandlers": {
-		"viewprotect/hide": "ViewProtect\\Formatter",
-		"viewprotect/show": "ViewProtect\\Formatter"
+		"viewprotect/read": "ViewProtect\\Formatter",
+		"viewprotect/upload": "ViewProtect\\Formatter"
 	},
 	"manifest_version": 1
 }

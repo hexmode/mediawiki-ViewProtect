@@ -33,29 +33,6 @@ class ViewProtect {
 	static protected $pagePermissionWriteCache = [];
 
 	/**
-	 * Remove all permission protections
-	 *
-	 * @param Title|int $title the page id or title object to clear permissions for
-	 * @return bool|int true if successful or number of rows removed
-	 */
-	public static function clearPagePermissions( $title ) {
-		if ( is_object( $title ) ) {
-			$title = [ $title->getArticleId() ];
-		}
-
-		$dbw = wfGetDB( DB_MASTER );
-		foreach ( (array)$title as $page ) {
-			$result = $dbw->delete( 'viewprotect',
-									[ 'viewprotect_page' => $page ],
-									__METHOD__ );
-		}
-		if ( is_object( $result ) ) {
-			$result = $result->numRows();
-		}
-		return $result;
-	}
-
-	/**
 	 * See if user has access to perform a given action on a page
 	 *
 	 * @param Title $title title being checked
@@ -110,14 +87,44 @@ class ViewProtect {
 	 * @param int $pageId that is the target
 	 * @param string $group to which it is restricted
 	 */
-	protected static function log( User $user, $action, $pageId, $group ) {
+	protected static function log( User $user, $action, $pageId, $oldGroups, $newGroups ) {
 		$logEntry = new ManualLogEntry( 'viewprotect', $action );
 		$logEntry->setPerformer( $user );
 		$logEntry->setTarget( Title::newFromId( $pageId ) );
 		$logEntry->setParameters( [
-			'4::group' => $group
+			'4::oldgroup' => $oldGroups,
+			'5::oldgroup' => $newGroups
 		] );
 		$logEntry->insert();
+	}
+
+	/**
+	 * Remove all permission protections
+	 *
+	 * @param Title|int $title the page id or title object to clear permissions for
+	 * @return bool|int true if successful or number of rows removed
+	 */
+	public static function clearPagePermissions( $title ) {
+		if ( is_object( $title ) ) {
+			$title = [ $title->getArticleId() ];
+		}
+
+		$result = [];
+		$dbw = wfGetDB( DB_MASTER );
+		foreach ( (array)$title as $page ) {
+			$res = $dbw->select( 'viewprotect',
+								 [ 'viewprotect_page as page', 'viewprotect_group as grp',
+								   'viewprotect_permission as permission' ],
+								 [ 'viewprotect_page' => $page ], __METHOD__,
+								 [ 'DISTINCT' ] );
+			foreach ( $res as $row ) {
+				$result[$row->page][$row->permission][$row->grp] = 1;
+			}
+			$dbw->delete( 'viewprotect',
+						  [ 'viewprotect_page' => $page ],
+						  __METHOD__ );
+		}
+		return $result;
 	}
 
 	/**
@@ -126,16 +133,30 @@ class ViewProtect {
 	public static function flushPageProtections() {
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->startAtomic( __METHOD__ );
-		self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
+
+		$pUser = '';
+		$oPerm = self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
+		$nPerm = [];
 		foreach ( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
 			foreach ( $actionGroup as $action => $groups ) {
 				foreach ( $groups as $group => $user ) {
-					self::log( $user, "hide", $pageId, $group );
+					$nPerm[$pageId][$action][$group] = 1;
+					$pUser = $user; // It'll only be one user making changes
 					$dbw->insert( 'viewprotect',
 								  [ 'viewprotect_page' => $pageId,
 									'viewprotect_permission' => $action,
 									'viewprotect_group' => $group ],
 								  __METHOD__ );
+				}
+			}
+		}
+		foreach ( $nPerm as $pageId => $actions ) {
+			foreach ( $actions as $perm => $groups ) {
+				$nGroups = implode( ", ", array_keys( $groups ) );
+				$oGroups = implode( ", ", array_keys( $oPerm[$pageId][$perm] ) );
+				wfDebugLog( __METHOD__, "$user, $perm, $pageId, $oGroups, $nGroups" );
+				if ( $oGroups != $nGroups ) {
+					self::log( $user, $perm, $pageId, $oGroups, $nGroups );
 				}
 			}
 		}
