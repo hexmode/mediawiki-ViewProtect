@@ -20,6 +20,8 @@
 
 	"viewprotect-log-page": "View protection log",
 
+	"viewprotect-read-indicator": "<b>Restricted to: $1</b>",
+
 	"log-name-viewprotect": "View protection",
 	"log-show-hide-viewprotect": "$1 view protection log",
 	"log-description-viewprotect": "When a page's read protection is changed",

@@ -16,5 +16,12 @@
 	"viewprotectfile-success-add": "Message that shows when protection is added",
 	"viewprotectfile-success-remove": "Message that shows when a message is removed",
 
+	"viewprotect-read-indicator": "Indicator showing when page is read-restricted.",
+
+	"log-name-viewprotect": "Name of log page",
+	"log-show-hide-viewprotect": "Indicator to hide/show view protections",
+	"log-description-viewprotect": "Description of what this is",
+	"logentry-viewprotect-hide": "User who hid a page",
+	"logentry-viewprotect-show": "User who un-hid a page",
 	"action-viewprotectmanage": "{{doc-action|viewprotectmanage}}"
 }

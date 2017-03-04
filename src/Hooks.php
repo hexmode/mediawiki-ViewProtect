@@ -42,6 +42,17 @@ class Hooks {
 	public static function onBeforePageDisplay( OutputPage $out, Skin $skin ) {
 		// Always return true, indicating that parser initialization should
 		// continue normally.
+
+		// Only checking read restrictions right now
+		$restrictions = [ 'read' ];
+
+		foreach ( $restrictions as $restrict ) {
+			$allowedGroups = ViewProtect::getPageRestrictions( $out->getTitle(), $restrict );
+			if ( count( $allowedGroups ) > 0 ) {
+				$msg = wfMessage( "viewprotect-$restrict-indicator", $allowedGroups );
+				$out->setIndicators( [ "viewprotect-$restrict" => $msg->plain() ] );
+			}
+		}
 		return true;
 	}
 
@@ -78,6 +89,9 @@ class Hooks {
 		// );
 		$result = ViewProtect::hasPermission( $title, $user, $action );
 
+		if ( count( $result ) !== 0 ) {
+			return false;
+		}
 		return true;
 	}
 

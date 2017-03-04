@@ -36,7 +36,6 @@ class ViewProtect {
 	 * Remove all permission protections
 	 *
 	 * @param Title|int $title the page id or title object to clear permissions for
-	 * @param User $user who is performing the action
 	 * @return bool|int true if successful or number of rows removed
 	 */
 	public static function clearPagePermissions( $title ) {
@@ -88,12 +87,13 @@ class ViewProtect {
 			$groupList[] = $group;
 		}
 		wfDebugLog( __METHOD__, "Result for $user/$title/$action: no" );
-		return [ [ "viewprotect-denied", $groupList ] ];
+		return array_merge( [ "viewprotect-denied" ], $groupList );
 	}
 
 	/**
 	 * Set the page permission cache
 	 *
+	 * @param User $user the user
 	 * @param Title $title title
 	 * @param string $action restricted action
 	 * @param string $group group allowed
@@ -146,10 +146,10 @@ class ViewProtect {
 	 * Get the groups allowed
 	 *
 	 * @param Title $title title
-	 * @param string $action restricted action
+	 * @param string $action restricted action, default 'read'
 	 * @return array list of allowed groups, empty if everyone is allowed
 	 */
-	public static function getPageRestrictions( Title $title, $action ) {
+	public static function getPageRestrictions( Title $title, $action = 'read' ) {
 		wfDebugLog( __METHOD__, "Checking $action for $title" );
 		$dbkey = $title->getArticleID();
 		if ( $dbkey !== 0 &&
