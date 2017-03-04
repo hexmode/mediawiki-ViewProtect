@@ -17,6 +17,8 @@
 	"viewprotectfile-group": "Restrict $1 to the following group:",
 	"viewprotectfile-submit": "Restrict access",
 	"viewprotectfile-notexist": "File does not (yet) exist",
+	"viewprotectfile-success-add": "$1 has been restricted to the $2 group",
+	"viewprotectfile-success-remove": "$1 is no longer restricted",
 
 	"viewprotect-log-page": "View protection log",
 
