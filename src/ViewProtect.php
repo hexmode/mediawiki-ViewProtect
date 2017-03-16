@@ -193,7 +193,7 @@ class ViewProtect {
 		if ( !isset( self::$cache[$dbkey][$action] ) ) {
 			return [];
 		}
-		return array_keys( self::$cache[$dbkey][$action] );
+		return array_filter( array_keys( self::$cache[$dbkey][$action] ) );
 	}
 
 	/**
