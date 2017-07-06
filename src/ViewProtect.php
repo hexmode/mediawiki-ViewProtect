@@ -153,7 +153,10 @@ class ViewProtect {
 		foreach ( $nPerm as $pageId => $actions ) {
 			foreach ( $actions as $perm => $groups ) {
 				$nGroups = implode( ", ", array_keys( $groups ) );
-				$oGroups = implode( ", ", array_keys( $oPerm[$pageId][$perm] ) );
+				$oGroups = '';
+				if ( isset( $oPerm[$pageId][$perm] ) ) {
+					$oGroups = implode( ", ", array_keys( $oPerm[$pageId][$perm] ) );
+				}
 				wfDebugLog( __METHOD__, "$user, $perm, $pageId, $oGroups, $nGroups" );
 				if ( $oGroups != $nGroups ) {
 					self::log( $user, $perm, $pageId, $oGroups, $nGroups );
