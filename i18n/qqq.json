@@ -21,7 +21,7 @@
 	"viewprotect-read-indicator": "<b>Restricted to: $1</b>",
 
 	"log-name-viewprotect": "Name of log page",
-	"logeventslist-viewprotect-log": "View protection log option label on [[Special:Log]]",
+	"log-show-hide-viewprotect": "Indicator to hide/show view protections",
 	"log-description-viewprotect": "Description of what this is",
 	"logentry-viewprotect-hide": "User who hid a page",
 	"logentry-viewprotect-show": "User who un-hid a page",

@@ -25,7 +25,7 @@
 	"viewprotect-read-indicator": "<b>Restricted to: $1</b>",
 
 	"log-name-viewprotect": "View protection",
-	"logeventslist-viewprotect-log": "View protection log",
+	"log-show-hide-viewprotect": "$1 view protection log",
 	"log-description-viewprotect": "When a page's read protection is changed",
 	"logentry-viewprotect-read": "$1 {{GENDER:$2|changed}} read permission $3 from the '$4' group to the '$5' group",
 	"logentry-viewprotect-upload": "$1 {{GENDER:$2|changed}} upload permission $3 from the '$4' group to the '$5' group",
