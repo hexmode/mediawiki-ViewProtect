@@ -46,11 +46,13 @@ class Hooks {
 		// Only checking read restrictions right now
 		$restrictions = [ 'read' ];
 
-		foreach ( $restrictions as $restrict ) {
-			$allowedGroups = ViewProtect::getPageRestrictions( $out->getTitle(), $restrict );
-			if ( count( $allowedGroups ) > 0 ) {
-				$msg = wfMessage( "viewprotect-$restrict-indicator", $allowedGroups );
-				$out->setIndicators( [ "viewprotect-$restrict" => $msg->plain() ] );
+		if ( !defined( 'MW_UPDATER' ) ) {
+			foreach ( $restrictions as $restrict ) {
+				$allowedGroups = ViewProtect::getPageRestrictions( $out->getTitle(), $restrict );
+				if ( count( $allowedGroups ) > 0 ) {
+					$msg = wfMessage( "viewprotect-$restrict-indicator", $allowedGroups );
+					$out->setIndicators( [ "viewprotect-$restrict" => $msg->plain() ] );
+				}
 			}
 		}
 		return true;
