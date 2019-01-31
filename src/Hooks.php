@@ -2,7 +2,7 @@
 /**
  * Hooks for ViewProtect extension
  *
- * Copyright (C) 2017  Mark A. Hershberger
+ * Copyright (C) 2017, 2019  NicheWork, LLC
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ class Hooks {
 		// Only checking read restrictions right now
 		$restrictions = [ 'read' ];
 
-		if ( !defined( 'MW_UPDATER' ) ) {
+		global $wgFullyInitialised;
+		if ( $wgFullyInitialised === true ) {
 			foreach ( $restrictions as $restrict ) {
 				$allowedGroups = ViewProtect::getPageRestrictions( $out->getTitle(), $restrict );
 				if ( count( $allowedGroups ) > 0 ) {
@@ -65,8 +66,9 @@ class Hooks {
 	 * @return bool
 	 */
 	public static function onLoadExtensionSchemaUpdates( DatabaseUpdater $updater ) {
-		$updater->addExtensionTable( 'viewprotect',
-									 __DIR__ . '/../sql/add-viewprotect.sql' );
+		$updater->addExtensionTable(
+			'viewprotect', __DIR__ . '/../sql/add-viewprotect.sql'
+		);
 
 		return true;
 	}
@@ -89,10 +91,13 @@ class Hooks {
 		// "read", "edit", "patrol", "deletedhistory",
 		// "delete", "move", "protect",
 		// );
-		$result = ViewProtect::hasPermission( $title, $user, $action );
+		global $wgFullyInitialised;
+		if ( $wgFullyInitialised === true ) {
+			$result = ViewProtect::hasPermission( $title, $user, $action );
 
-		if ( count( $result ) !== 0 ) {
-			return false;
+			if ( count( $result ) !== 0 ) {
+				return false;
+			}
 		}
 		return true;
 	}
