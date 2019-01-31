@@ -21,7 +21,7 @@
  * @ingroup Extensions
  */
 
-namespace ViewProtect;
+namespace MediaWiki\Extension\ViewProtect;
 
 use ConfigFactory;
 use ManualLogEntry;

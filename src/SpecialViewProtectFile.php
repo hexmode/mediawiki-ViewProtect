@@ -22,7 +22,7 @@
  * @ingroup Extensions
  */
 
-namespace ViewProtect;
+namespace MediaWiki\Extension\ViewProtect;
 
 use HTMLForm;
 use ImageListPager;

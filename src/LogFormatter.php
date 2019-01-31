@@ -22,10 +22,10 @@
  * @ingroup Extensions
  */
 
-namespace ViewProtect;
+namespace MediaWiki\Extension\ViewProtect;
 
 use LogFormatter;
 
 class Formatter extends LogFormatter {
-	
+
 }
