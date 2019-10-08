@@ -2,15 +2,23 @@
 	"name": "mediawiki/view-protect",
 	"description": "Adds the ability to hide pages based on groups",
 	"type": "mediawiki-extension",
-	"require-dev": {
-		"vimeo/psalm": "^3.5"
-	},
-	"license": "GPL-3.0-or-later",
+	"keywords": [
+		"Wiki",
+		"MediaWiki"
+	],
 	"authors": [
 		{
 			"name": "Mark A. Hershberger",
 			"email": "mah@nichework.com"
 		}
 	],
+	"homepage": "https://github.com/hexmode/mediawiki-ViewProtect/",
+	"license": "GPL-3.0-or-later",
+	"require-dev": {
+		"php": ">=7.0",
+		"ext-mbstring": "*",
+		"composer/installers": "1.*,>=1.0.1",
+		"vimeo/psalm": "^3.5"
+	},
 	"require": {}
 }
