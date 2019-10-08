@@ -95,7 +95,7 @@ class Hooks {
 		if ( $wgFullyInitialised === true ) {
 			$result = ViewProtect::hasPermission( $title, $user, $action );
 
-			if ( count( $result ) !== 0 ) {
+			if ( $result !== true && count( $result ) !== 0 ) {
 				return false;
 			}
 		}

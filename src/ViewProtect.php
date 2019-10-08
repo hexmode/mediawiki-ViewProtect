@@ -29,7 +29,9 @@ use Title;
 use User;
 
 class ViewProtect {
-	static protected $cache = null;
+	/** @param ?array */
+	static protected $cache;
+	/** @param array */
 	static protected $pagePermissionWriteCache = [];
 
 	/**
@@ -38,7 +40,7 @@ class ViewProtect {
 	 * @param Title $title title being checked
 	 * @param User $user to check
 	 * @param string $action being checked
-	 * @return array empty if allowed, error with groups that have access
+	 * @return true|array true if allowed, otherwise a list of groups that have access
 	 */
 	public static function hasPermission(
 		Title $title, User $user, $action
@@ -74,6 +76,7 @@ class ViewProtect {
 	 * @param Title $title title
 	 * @param string $action restricted action
 	 * @param string $group group allowed
+	 * @return void
 	 */
 	public static function setPageProtection( User $user, Title $title, $action, $group ) {
 		self::$pagePermissionWriteCache[$title->getArticleID()][$action][$group] = $user;
@@ -85,7 +88,9 @@ class ViewProtect {
 	 * @param User $user performing action
 	 * @param string $action being performed
 	 * @param int $pageId that is the target
-	 * @param string $group to which it is restricted
+	 * @param string $oldGroups to which it was restricted
+	 * @param string $newGroups to which it is now restricted
+	 * @return bool
 	 */
 	protected static function log( User $user, $action, $pageId, $oldGroups, $newGroups ) {
 		$logEntry = new ManualLogEntry( 'viewprotect', $action );
@@ -95,33 +100,34 @@ class ViewProtect {
 			'4::oldgroup' => $oldGroups,
 			'5::oldgroup' => $newGroups
 		] );
-		$logEntry->insert();
+		return $logEntry->insert();
 	}
 
 	/**
 	 * Remove all permission protections
 	 *
-	 * @param Title|int $title the page id or title object to clear permissions for
-	 * @return bool|int true if successful or number of rows removed
+	 * @param int[] $pageIDs list of the page id or title object for
+	 *     which to clear permissions
+	 * @return array<string, array<string, array<string, bool>>>
+	 *     permissions that were cleared
 	 */
-	public static function clearPagePermissions( $title ) {
-		if ( is_object( $title ) ) {
-			$title = [ $title->getArticleId() ];
-		}
-
+	public static function clearPagePermissions( array $pageIDs ) {
 		$result = [];
 		$dbw = wfGetDB( DB_MASTER );
-		foreach ( (array)$title as $page ) {
+		foreach ( $pageIDs as $pageID ) {
 			$res = $dbw->select( 'viewprotect',
-								 [ 'viewprotect_page as page', 'viewprotect_group as grp',
-								   'viewprotect_permission as permission' ],
-								 [ 'viewprotect_page' => $page ], __METHOD__,
+								 [
+									 'viewprotect_page as page',
+									 'viewprotect_group as grp',
+									 'viewprotect_permission as permission'
+								 ],
+								 [ 'viewprotect_page' => $pageID ], __METHOD__,
 								 [ 'DISTINCT' ] );
 			foreach ( $res as $row ) {
-				$result[$row->page][$row->permission][$row->grp] = 1;
+				$result[$row->page][$row->permission][$row->grp] = true;
 			}
 			$dbw->delete( 'viewprotect',
-						  [ 'viewprotect_page' => $page ],
+						  [ 'viewprotect_page' => $pageID ],
 						  __METHOD__ );
 		}
 		return $result;
@@ -129,13 +135,17 @@ class ViewProtect {
 
 	/**
 	 * Write cached page permissions to disk.
+	 *
+	 * @return void
 	 */
 	public static function flushPageProtections() {
 		$dbw = wfGetDB( DB_MASTER );
 		$dbw->startAtomic( __METHOD__ );
 
 		$pUser = '';
-		$oPerm = self::clearPagePermissions( array_keys( self::$pagePermissionWriteCache ) );
+		$oPerm = self::clearPagePermissions(
+			array_keys( self::$pagePermissionWriteCache )
+		);
 		$nPerm = [];
 		foreach ( self::$pagePermissionWriteCache as $pageId => $actionGroup ) {
 			foreach ( $actionGroup as $action => $groups ) {
@@ -157,9 +167,9 @@ class ViewProtect {
 				if ( isset( $oPerm[$pageId][$perm] ) ) {
 					$oGroups = implode( ", ", array_keys( $oPerm[$pageId][$perm] ) );
 				}
-				wfDebugLog( __METHOD__, "$user, $perm, $pageId, $oGroups, $nGroups" );
+				wfDebugLog( __METHOD__, "$pUser, $perm, $pageId, $oGroups, $nGroups" );
 				if ( $oGroups != $nGroups ) {
-					self::log( $user, $perm, $pageId, $oGroups, $nGroups );
+					self::log( $pUser, $perm, $pageId, $oGroups, $nGroups );
 				}
 			}
 		}
