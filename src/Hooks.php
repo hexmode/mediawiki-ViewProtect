@@ -48,11 +48,14 @@ class Hooks {
 
 		global $wgFullyInitialised;
 		if ( $wgFullyInitialised === true ) {
-			foreach ( $restrictions as $restrict ) {
-				$allowedGroups = ViewProtect::getPageRestrictions( $out->getTitle(), $restrict );
-				if ( count( $allowedGroups ) > 0 ) {
-					$msg = wfMessage( "viewprotect-$restrict-indicator", $allowedGroups );
-					$out->setIndicators( [ "viewprotect-$restrict" => $msg->plain() ] );
+			$title = $out->getTitle();
+			if ( $title !== null ) {
+				foreach ( $restrictions as $restrict ) {
+					$allowed = ViewProtect::getPageRestrictions( $title, $restrict );
+					if ( count( $allowed ) > 0 ) {
+						$msg = $out->msg( "viewprotect-$restrict-indicator", $allowed );
+						$out->setIndicators( [ "viewprotect-$restrict" => $msg->plain() ] );
+					}
 				}
 			}
 		}

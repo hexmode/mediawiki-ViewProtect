@@ -26,6 +26,7 @@ namespace MediaWiki\Extension\ViewProtect;
 
 use HTMLForm;
 use ImageListPager;
+use Iterator;
 use MWException;
 use SpecialPage;
 use Title;
@@ -122,7 +123,7 @@ class SpecialViewProtectFile extends SpecialPage {
 
 		if ( $this->submittedName && $this->userCanModify( $this->submittedName ) ) {
 			$title = Title::newFromText( $this->submittedName, NS_FILE );
-			if ( !$title->exists() ) {
+			if ( !$title || !$title->exists() ) {
 				$field['warning'] = [
 					'default' => $this->showNote( 'viewprotectfile-notexist' ),
 					'type' => 'info',
@@ -169,7 +170,15 @@ class SpecialViewProtectFile extends SpecialPage {
 	 * @return string html
 	 */
 	protected function showNote( $msg ) {
-		return '<ul class="oo-ui-fieldLayout-messages"><li class="oo-ui-fieldLayout-messages-error"><span aria-disabled="false" class="oo-ui-widget oo-ui-widget-enabled oo-ui-iconElement oo-ui-iconElement-icon oo-ui-icon-alert oo-ui-flaggedElement-warning oo-ui-iconWidget oo-ui-image-warning"></span><span aria-disabled="false" class="oo-ui-widget oo-ui-widget-enabled oo-ui-labelElement oo-ui-labelElement-label oo-ui-labelWidget">' . wfMessage( $msg )->parse() . '</span></li></ul>';
+		return '<ul class="oo-ui-fieldLayout-messages">'
+			. '<li class="oo-ui-fieldLayout-messages-error">'
+			. '<span aria-disabled="false" class="oo-ui-widget oo-ui-widget-enabled'
+			. ' oo-ui-iconElement oo-ui-iconElement-icon oo-ui-icon-alert'
+			. ' oo-ui-flaggedElement-warning oo-ui-iconWidget oo-ui-image-warning">'
+			. '</span><span aria-disabled="false"'
+			. ' class="oo-ui-widget oo-ui-widget-enabled oo-ui-labelElement'
+			. ' oo-ui-labelElement-label oo-ui-labelWidget">'
+			. $this->msg( $msg )->parse() . '</span></li></ul>';
 	}
 
 	/**
@@ -293,15 +302,19 @@ class SpecialViewProtectFile extends SpecialPage {
 			$pager->doQuery();
 			$fileIterator = $pager->getResult();
 			if ( $fileIterator->numRows() > 0 ) {
-				$this->mostRecent = $fileIterator->current()->img_name;
-				$this->uploadedFiles = [];
+				$current = $fileIterator->current();
+				if ( is_object( $current ) && property_exists( $current, 'img_name' ) ) {
+					$this->mostRecent = $current->img_name;
+					$this->uploadedFiles = [];
 
-				iterator_apply( $fileIterator,
-								function ( $iter ) {
-									$name = $iter->current()->img_name;
-									$this->uploadedFiles[$name] = $name;
-									return true;
-								}, [ $fileIterator ] );
+					iterator_apply(
+						$fileIterator,
+						function ( Iterator $iter ) {
+							$name = $iter->current()->img_name;
+							$this->uploadedFiles[$name] = $name;
+							return true;
+						}, [ $fileIterator ] );
+				}
 			}
 		}
 		return $this->uploadedFiles;

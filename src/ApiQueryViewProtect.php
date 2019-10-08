@@ -18,9 +18,11 @@
 
 namespace MediaWiki\Extension\ViewProtect;
 
+use ApiBase;
+use ApiQuery;
 use ApiQueryBase;
 
-class ApiQuery extends ApiQueryBase {
+class Api extends ApiQueryBase {
 
 	/**
 	 * Constructor is optional. Only needed if we give
@@ -29,15 +31,19 @@ class ApiQuery extends ApiQueryBase {
 	 * Query modules have the convention to use a property prefix.
 	 * Base modules generally don't use a prefix, and as such don't
 	 * need the constructor in most cases.
+	 * @param ApiQuery $queryModule
+	 * @param string $moduleName
 	 */
-	public function __construct( $query, $moduleName ) {
-		parent::__construct( $query, $moduleName, 'ex' );
+	public function __construct( ApiQuery $queryModule, $moduleName ) {
+		parent::__construct( $queryModule, $moduleName, 'vp' );
 	}
 
 	/**
 	 * In this example we're returning one ore more properties
 	 * of wgViewProtectFooStuff. In a more realistic example, this
 	 * method would probably
+	 *
+	 * @return void
 	 */
 	public function execute() {
 		global $wgViewProtectFooStuff;
@@ -75,7 +81,7 @@ class ApiQuery extends ApiQueryBase {
 	}
 
 	/**
-	 *
+	 * @return array
 	 */
 	protected function getViewProtectsMessages() {
 		return [
