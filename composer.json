@@ -1,0 +1,16 @@
+{
+    "name": "mediawiki/view-protect",
+    "description": "Adds the ability to hide pages based on groups",
+    "type": "mediawiki-extension",
+    "require-dev": {
+        "vimeo/psalm": "^3.5"
+    },
+    "license": "GPL-3.0-or-later",
+    "authors": [
+        {
+            "name": "Mark A. Hershberger",
+            "email": "mah@nichework.com"
+        }
+    ],
+    "require": {}
+}
