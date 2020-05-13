@@ -295,7 +295,8 @@ class SpecialViewProtectFile extends SpecialPage {
 				$isMgr,
 				$search,
 				$this->including(),
-				false
+				false,
+				$this->getLinkRenderer()
 			);
 			// Only offer the most recent 200 files for completion
 			$pager->setLimit( 200 );
