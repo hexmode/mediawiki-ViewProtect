@@ -12,9 +12,6 @@
 		"ViewProtect": "MediaWiki\\Extension\\ViewProtect\\SpecialViewProtect",
 		"ViewProtectFile": "MediaWiki\\Extension\\ViewProtect\\SpecialViewProtectFile"
 	},
-	"APIListModules": {
-		"viewprotect": "ApiQueryViewProtect"
-	},
 	"MessagesDirs": {
 		"ViewProtect": [
 			"i18n"
