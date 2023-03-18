@@ -33,8 +33,7 @@
 		"getUserPermissionsErrors": "MediaWiki\\Extension\\ViewProtect\\Hooks::onGetUserPermissionsErrors",
 		"ImgAuthBeforeStream": "MediaWiki\\Extension\\ViewProtect\\Hooks::onImgAuthBeforeStream",
 		"LoadExtensionSchemaUpdates": "MediaWiki\\Extension\\ViewProtect\\Hooks::onLoadExtensionSchemaUpdates",
-		"PageGroups": "MediaWiki\\Extension\\ViewProtect\\Hooks::onCoPPageGroups",
-		"UpdateUsableLevels": "MediaWiki\\Extension\\ViewProtect\\Hooks::onUpdateUsableLevels"
+		"PageGroups": "MediaWiki\\Extension\\ViewProtect\\Hooks::onCoPPageGroups"
 	},
 	"AvailableRights": [
 		"viewprotectmanage"
