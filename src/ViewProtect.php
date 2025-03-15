@@ -2,7 +2,7 @@
 /**
  * ViewProtect extension
  *
- * Copyright (C) 2017, 2019  NicheWork, LLC
+ * Copyright (C) 2017-2025  NicheWork, LLC
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,10 @@
 
 namespace MediaWiki\Extension\ViewProtect;
 
-use ConfigFactory;
 use ManualLogEntry;
-use Title;
-use User;
+use MediaWiki\MediaWikiServices;
+use MediaWiki\Title\Title;
+use MediaWiki\User\User;
 
 class ViewProtect {
 	/** @param ?array */
@@ -49,23 +49,23 @@ class ViewProtect {
 			return true;
 		}
 		$allowedGroups = self::getPageRestrictions( $title, $action );
-		wfDebugLog( __METHOD__, "Checking for $user/$title/$action ..." );
+		wfDebugLog( "ViewProtect", "Checking for $user/$title/$action ..." );
 		$groupList = [];
 		if ( count( $allowedGroups ) === 0 ) {
-			wfDebugLog( __METHOD__,
+			wfDebugLog( "ViewProtect",
 						"Result for $user/$title/$action: everyone allowed" );
 			return true;
 		}
 
 		foreach ( $allowedGroups as $group ) {
 			if ( self::inGroup( $user, $group ) ) {
-				wfDebugLog( __METHOD__,
+				wfDebugLog( "ViewProtect",
 							"Result for $user/$title/$action: ok" );
 				return true;
 			}
 			$groupList[] = $group;
 		}
-		wfDebugLog( __METHOD__, "Result for $user/$title/$action: no" );
+		wfDebugLog( "ViewProtect", "Result for $user/$title/$action: no" );
 		return array_merge( [ "viewprotect-denied" ], $groupList );
 	}
 
@@ -113,7 +113,8 @@ class ViewProtect {
 	 */
 	public static function clearPagePermissions( array $pageIDs ) {
 		$result = [];
-		$dbw = wfGetDB( DB_MASTER );
+        $dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
 		foreach ( $pageIDs as $pageID ) {
 			$res = $dbw->select( 'viewprotect',
 								 [
@@ -139,7 +140,8 @@ class ViewProtect {
 	 * @return void
 	 */
 	public static function flushPageProtections() {
-		$dbw = wfGetDB( DB_MASTER );
+        $dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+		$dbw = $dbProvider->getPrimaryDatabase();
 		$dbw->startAtomic( __METHOD__ );
 
 		$pUser = '';
@@ -167,7 +169,7 @@ class ViewProtect {
 				if ( isset( $oPerm[$pageId][$perm] ) ) {
 					$oGroups = implode( ", ", array_keys( $oPerm[$pageId][$perm] ) );
 				}
-				wfDebugLog( __METHOD__, "$pUser, $perm, $pageId, $oGroups, $nGroups" );
+				wfDebugLog( "ViewProtect", "$pUser, $perm, $pageId, $oGroups, $nGroups" );
 				if ( $oGroups != $nGroups ) {
 					self::log( $pUser, $perm, $pageId, $oGroups, $nGroups );
 				}
@@ -184,12 +186,13 @@ class ViewProtect {
 	 * @return array list of allowed groups, empty if everyone is allowed
 	 */
 	public static function getPageRestrictions( Title $title, $action = 'read' ) {
-		wfDebugLog( __METHOD__, "Checking $action for $title" );
+		wfDebugLog( "ViewProtect", "Checking $action for $title" );
 		$dbkey = $title->getArticleID();
 		if ( $dbkey !== 0 &&
 			 ( self::$cache === null || !isset( self::$cache[ $dbkey ] ) )
 		) {
-			$dbr = wfGetDB( DB_MASTER );
+            $dbProvider = MediaWikiServices::getInstance()->getConnectionProvider();
+            $dbr = $dbProvider->getReplicaDatabase();
 			$res = $dbr->select( 'viewprotect',
 								 [ 'viewprotect_group',
 								   'viewprotect_permission' ],
@@ -217,9 +220,12 @@ class ViewProtect {
 	 * @return bool true if user is in the group
 	 */
 	protected static function inGroup( User $user, $group ) {
-		$result = in_array( $group, $user->getGroups() );
+        $userGroups = MediaWikiServices::getInstance()
+			->getUserGroupManager()
+			->getUserGroups( $user->getUser(), $user->queryFlagsUsed );
+		$result = in_array( $group, $userGroups );
 
-		wfDebugLog( __METHOD__, "$user is in $group: " .
+		wfDebugLog( "ViewProtect", "$user is in $group: " .
 					( $result ? "yes" : "no" ) );
 		return $result;
 	}

@@ -3,7 +3,7 @@
  * ViewProtect SpecialPage for protecting files with the ViewProtect
  * extension
  *
- * Copyright (C) 2017, 2019  NicheWork, LLC
+ * Copyright (C) 2017-2025  NicheWork, LLC
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,9 +28,10 @@ use HTMLForm;
 use ImageListPager;
 use Iterator;
 use MWException;
-use SpecialPage;
-use Title;
-use User;
+use MediaWiki\MediaWikiServices;
+use MediaWiki\SpecialPage\SpecialPage;
+use MediaWiki\Title\Title;
+use MediaWiki\User\User;
 
 class SpecialViewProtectFile extends SpecialPage {
 
@@ -199,6 +200,20 @@ class SpecialViewProtectFile extends SpecialPage {
 	}
 
 	/**
+	 * Get the list of explicit group memberships this user has.
+	 * The implicit * and user groups are not included.
+	 *
+	 * Copied from removed User::getGroups()
+	 *
+	 * @return string[] Array of internal group names
+	 */
+    public function getUserGroups() {
+        return MediaWikiServices::getInstance()
+			->getUserGroupManager()
+			->getUserGroups( $this->getUser(), $this->getUser()->queryFlagsUsed );
+    }
+
+	/**
 	 * Return a list of groups that the current user is a member of
 	 *
 	 * @return array list of groups
@@ -210,7 +225,7 @@ class SpecialViewProtectFile extends SpecialPage {
 		if ( $this->getUser()->isAllowed( "viewprotectmanage" ) ) {
 			$groupList = User::getAllGroups();
 		} else {
-			$groupList = $this->getUser()->getGroups();
+			$groupList = $this->getUserGroups();
 		}
 		array_map(
 			function( $name ) use ( &$groups ) {
