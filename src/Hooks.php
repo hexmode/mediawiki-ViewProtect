@@ -24,10 +24,11 @@
 namespace MediaWiki\Extension\ViewProtect;
 
 use DatabaseUpdater;
+use MediaWiki\Title\Title;
+use MediaWiki\User\User;
 use OutputPage;
+use RequestContext;
 use Skin;
-use Title;
-use User;
 
 class Hooks {
 	/**
@@ -116,9 +117,11 @@ class Hooks {
 	 */
 	public static function onImgAuthBeforeStream( Title $title, &$path, &$baseName,
 												  &$result ) {
-		global $wgResourceBasePath, $wgUser;
+		global $wgResourceBasePath;
 
-		$groups = ViewProtect::hasPermission( $title, $wgUser, 'read' );
+		$groups = ViewProtect::hasPermission(
+			$title, RequestContext::getMain()->getUser(), 'read'
+		);
 		if ( $groups === true ) {
 			return true;
 		}
