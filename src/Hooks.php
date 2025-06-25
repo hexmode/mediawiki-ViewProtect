@@ -23,11 +23,11 @@
 
 namespace MediaWiki\Extension\ViewProtect;
 
-use DatabaseUpdater;
+use MediaWiki\Context\RequestContext;
+use MediaWiki\Installer\DatabaseUpdater;
+use MediaWiki\Output\OutputPage;
 use MediaWiki\Title\Title;
 use MediaWiki\User\User;
-use OutputPage;
-use RequestContext;
 use Skin;
 
 class Hooks {

@@ -27,6 +27,7 @@ use ManualLogEntry;
 use MediaWiki\MediaWikiServices;
 use MediaWiki\Title\Title;
 use MediaWiki\User\User;
+use Wikimedia\Rdbms\IDBAccessObject;
 
 class ViewProtect {
 	/** @param ?array */
@@ -222,7 +223,7 @@ class ViewProtect {
 	protected static function inGroup( User $user, $group ) {
         $userGroups = MediaWikiServices::getInstance()
 			->getUserGroupManager()
-			->getUserGroups( $user->getUser(), $user->queryFlagsUsed );
+			->getUserGroups( $user->getUser(), $user->queryFlagsUsed ?? IDBAccessObject::READ_NORMAL );
 		$result = in_array( $group, $userGroups );
 
 		wfDebugLog( "ViewProtect", "$user is in $group: " .
